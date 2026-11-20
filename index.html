@@ -1,229 +1,1027 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Acquiring Demo</title>
-<meta name="description" content="Interactive demo of how card acquiring works: from checkout to issuer approval.">
+<title>Подключение договора эквайринга — демо</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/tokens.css">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/demo-frame/demo-frame.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/tumbler/tumbler.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/close-button/close-button.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/back/back.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/button/button.css">
 <style>
-  :root {
-    --bg: #f6f7f9; --card: #ffffff; --text: #16181d; --muted: #5d6470;
-    --line: #e2e5ea; --accent: #2f6fed; --accent-soft: #e6eefe;
-    --ok: #1a8f4c; --ok-soft: #e3f5ea; --bad: #c8382f; --bad-soft: #fbe7e5;
-    --warn: #b7791f; --warn-soft: #fbf1df;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #111317; --card: #1a1d23; --text: #eceef2; --muted: #9aa1ad;
-      --line: #2b2f37; --accent: #6f9bff; --accent-soft: #1f2b47;
-      --ok: #4cc283; --ok-soft: #173325; --bad: #ff7a70; --bad-soft: #3a1d1b;
-      --warn: #e6b35a; --warn-soft: #3a2e17;
-    }
-  }
-  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--background-unaccented_background-color);
+    font-family: var(--font-font-family-default), sans-serif;
+    color: var(--text-text-color);
   }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 48px; }
-  header h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
-  header p { margin: 0; color: var(--muted); max-width: 640px; }
-  .badge {
-    display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px;
-    border-radius: 999px; background: var(--warn-soft); color: var(--warn); margin-bottom: 10px;
+  .stage {
+    position: absolute; left: 0; top: 0; width: 1024px; height: 768px; overflow: hidden;
+    background: #e9eaee; /* нет токена: подложка сцены, компонент показан отдельно */
   }
-  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; margin-top: 28px; }
-  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
-  .panel {
-    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px;
-  }
-  .panel h2 { font-size: 15px; margin: 0 0 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-  .order { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
-  .order:last-of-type { border-bottom: 0; }
-  .total { font-weight: 700; font-size: 18px; }
-  label.card-opt {
-    display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; margin-top: 8px;
-    border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
-  }
-  label.card-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
-  label.card-opt input { margin-top: 4px; }
-  .card-num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; }
-  .card-hint { font-size: 13px; color: var(--muted); }
-  button {
-    width: 100%; margin-top: 16px; padding: 12px; border: 0; border-radius: 10px;
-    background: var(--accent); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
-  }
-  button:disabled { opacity: .55; cursor: default; }
-  .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
 
-  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
-  @media (max-width: 560px) { .flow { grid-template-columns: repeat(3, 1fr); } }
+  /* ===== Компонент «ДОГОВОР» (Figma 29823:237281) ===== */
+  .contract {
+    position: absolute; right: 0; top: 0; width: 602px; height: 768px; display: flex;
+    background: var(--background-unaccented_background-color);
+    box-shadow: -6px 0 11px rgba(0,0,0,.11), 0 -2px 4px rgba(0,0,0,.02); /* нет токена: тень из макета */
+  }
+  .contract[hidden] { display: none; }
+  .contract__main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+  .contract__body { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0 0 24px var(--offset-offset_s); }
+  .contract__foot { flex: none; }
+
+  /* Скролл как в Saby (Controls/scroll): нативная полоса скрыта, своя полоса поверх контента,
+     видна при наведении на область; ширина 4px, при наведении на полосу — 10px */
+  .scroll { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+  .scroll > .contract__body { scrollbar-width: none; }
+  .scroll > .contract__body::-webkit-scrollbar { display: none; }
+  .vsb { position: absolute; top: 0; right: 0; bottom: 0; box-sizing: border-box; padding: var(--components-scrollbar-padding_scrollbar);
+    width: calc(4px + 2 * var(--components-scrollbar-padding_scrollbar)); visibility: hidden; transition: width .3s ease-in-out; z-index: 2; }
+  .scroll:hover > .vsb, .vsb.is-drag { visibility: visible; }
+  .vsb:hover, .vsb.is-drag { width: calc(10px + 2 * var(--components-scrollbar-padding_scrollbar)); }
+  .vsb[hidden] { display: none; }
+  .vsb__thumb { position: relative; width: 100%; border-radius: 100px; background: rgba(205, 205, 205, .8); /* нет токена: цвет ползунка Saby */ }
+
+  /* Шапка стартового экрана */
+  .head { height: 46px; flex: none; display: flex; align-items: center; padding: 0 12px 2px var(--offset-offset_xl); }
+  .head__title {
+    flex: 1 1 0; margin: 0; font-size: var(--font-font-size-font-size_4xl);
+    font-weight: 600; /* нет токена */ letter-spacing: -0.282px; line-height: 1;
+  }
+  /* Шапка вложенного экрана: подпись-раздел + «назад» с заголовком */
+  .crumb { height: 46px; flex: none; display: flex; align-items: center; padding: 0 0 0 var(--offset-offset_xl);
+    font-size: var(--font-font-size-font-size_m); color: var(--text-label_text-color); }
+  .backrow { flex: none; padding: 0 0 8px 6px; }
+  .backrow .back { font-weight: 600; /* нет токена */ }
+
+  .caption {
+    margin: 0; padding: var(--offset-offset_s) var(--offset-offset_m) var(--offset-offset_2xs);
+    font-size: var(--font-font-size-font-size_l); font-weight: 400; line-height: 20px;
+    color: var(--text-label_text-color); letter-spacing: -0.2115px;
+  }
+  .card { background: var(--background-background-color); border-radius: 16px; /* нет токена */ }
+  .menu-card { padding: 12px 8px; display: flex; flex-direction: column; gap: 6px; }
+  .menu-sub { height: 32px; display: flex; align-items: center; padding: 0 10px;
+    font-size: var(--font-font-size-font-size_l); color: var(--text-label_text-color); letter-spacing: -0.2115px; }
+
+  /* Пункт меню (BricksMenu/itemMenu) — в ui-kit нет, по макету */
+  .menu-item {
+    all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: flex; align-items: flex-start;
+    padding: 0 16px 0 var(--offset-offset_m); border-radius: 16px; /* нет токена */
+  }
+  .menu-item:hover { background: var(--components-dropdownpopup-item_hover_background-color_menu); }
+  .menu-item__icon, .method__icon {
+    flex: none; width: 24px; height: 24px; font-family: var(--icon-font-family-m_icon_font-family);
+    font-size: var(--icon-icon_size-icon-size_m); line-height: 24px; color: var(--icon-secondary_icon-color); text-align: center;
+  }
+  .menu-item__icon { margin: 4px var(--offset-offset_s) 0 0; }
+  .menu-item__text { flex: 1 1 0; min-width: 0; padding: 7px 0 var(--components-popup-menu-item_padding-bottom_menu);
+    display: flex; flex-direction: column; gap: var(--offset-offset_3xs); }
+  .menu-item__title { font-size: var(--font-font-size-font-size_l); letter-spacing: -0.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .menu-item__desc { font-size: var(--font-font-size-font-size_xs); letter-spacing: -0.1692px; color: var(--text-unaccented_text-color); }
+
+  /* Плашки банков (плашка банка) — по макету: 267×56, r12, отступ 12 */
+  .banks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bank {
+    all: unset; box-sizing: border-box; height: 56px; padding: 12px; display: flex; align-items: center; gap: 12px;
+    background: var(--background-background-color); border-radius: 12px; /* нет токена */
+    font-size: var(--font-font-size-font-size_l); letter-spacing: -0.2115px; cursor: default;
+  }
+  .bank[data-go] { cursor: pointer; }
+  .bank:hover { background: var(--background-hover_background-color); }
+  .bank img { width: 32px; height: 32px; object-fit: contain; flex: none; }
+  /* Вариант «иконки 24»: плашка 48, логотип 24, шрифт 15 */
+  .banks-s .bank { height: 48px; }
+  .banks-s .bank img { width: 24px; height: 24px; }
+  .bank__stub { width: 32px; height: 32px; flex: none; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center;
+    background: #333; color: #fff; font-weight: 600; /* нет токена: заглушка логотипа «Долями» */ }
+
+  /* Карточки способа оплаты (выбор типа) — 542×63, r12 */
+  .methods { display: flex; flex-direction: column; gap: 8px; }
+  .method {
+    all: unset; box-sizing: border-box; padding: 12px; display: flex; align-items: flex-start; gap: 12px;
+    background: var(--background-background-color); border-radius: 12px; /* нет токена */ cursor: default;
+  }
+  .method[data-go] { cursor: pointer; }
+  .method:hover { background: var(--background-hover_background-color); }
+  .method__icon { margin-top: 6px; }
+  .method__title { font-size: var(--font-font-size-font-size_l); letter-spacing: -0.2115px; }
+  .method__desc { margin-top: 4px; font-size: var(--font-font-size-font-size_m); color: var(--text-unaccented_text-color); letter-spacing: -0.1974px; }
+
+  /* Список организаций (терминал) */
+  .orgs { padding: 8px 0; border-radius: 12px; /* нет токена */ }
+  .org {
+    all: unset; box-sizing: border-box; width: 100%; height: 31px; padding: 0 24px 0 16px; display: flex; align-items: center; gap: 42px;
+    cursor: default;
+  }
+  .org[data-go] { cursor: pointer; }
+  .org:hover { background: var(--background-hover_background-color); }
+  .org__name { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: var(--font-font-size-font-size_m); }
+  .org__name small { font-size: var(--font-font-size-font-size_xs); color: var(--text-unaccented_text-color); margin-left: 4px; }
+  .org__num { font-size: var(--font-font-size-font-size_xs); color: var(--text-unaccented_text-color); }
+  .org__nums { display: flex; gap: 12px; flex: none; }
+
+  /* Шапка выбора компании: раздел + эквайер + поиск */
+  .crumb__acq { margin-left: 12px; }
+  .search {
+    margin-left: auto; margin-right: 4px; width: 182px; height: 24px; box-sizing: border-box; display: flex; align-items: center;
+    padding: 0 6px 0 8px; border: 1px solid var(--border-pale_border-color); border-radius: 12px; /* нет токена */
+    background: var(--background-background-color);
+  }
+  .search input { all: unset; flex: 1 1 0; min-width: 0; font-size: var(--font-font-size-font-size_m); color: var(--text-text-color); }
+  .search input::placeholder { color: var(--text-label_text-color); }
+  .search i { font-style: normal; font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-secondary_icon-color); }
+
+  /* Дерево компаний и точек продаж */
+  .tree { padding: 6px 0; border-radius: 12px; /* нет токена */ }
   .node {
-    text-align: center; padding: 12px 6px; border: 1px solid var(--line); border-radius: 10px;
-    font-size: 13px; transition: background .25s, border-color .25s;
+    box-sizing: border-box; width: 100%; display: flex; align-items: flex-start; cursor: default;
+    padding: 5px 12px 5px 38px; min-height: 31px;
   }
-  .node b { display: block; font-size: 14px; }
-  .node.active { border-color: var(--accent); background: var(--accent-soft); }
-  .node.ok { border-color: var(--ok); background: var(--ok-soft); }
-  .node.bad { border-color: var(--bad); background: var(--bad-soft); }
-  ol.log { list-style: none; margin: 0; padding: 0; min-height: 120px; }
-  ol.log li {
-    padding: 8px 10px; border-left: 3px solid var(--accent); margin-bottom: 6px;
-    background: var(--bg); border-radius: 0 8px 8px 0; font-size: 14px;
-    animation: in .25s ease-out;
-  }
-  ol.log li.ok { border-color: var(--ok); }
-  ol.log li.bad { border-color: var(--bad); }
-  ol.log li.warn { border-color: var(--warn); }
-  ol.log li small { color: var(--muted); font-family: ui-monospace, Menlo, monospace; margin-right: 6px; }
-  .empty { color: var(--muted); font-size: 14px; }
-  .result { margin-top: 14px; padding: 14px; border-radius: 10px; font-weight: 600; display: none; }
-  .result.ok { display: block; background: var(--ok-soft); color: var(--ok); }
-  .result.bad { display: block; background: var(--bad-soft); color: var(--bad); }
-  @keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .node:hover { background: var(--background-hover_background-color); }
+  .node[data-go] { cursor: pointer; }
+  .node--company { align-items: center; }
+  .node--child { padding-left: 56px; }
+  .node__exp { all: unset; width: 16px; margin: 0 10px 0 -26px; font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-secondary_icon-color); cursor: pointer; text-align: center; }
+  .node__title { font-size: var(--font-font-size-font-size_l); letter-spacing: -0.2115px; }
+  .node__addr { margin-top: 3px; font-size: var(--font-font-size-font-size_xs); color: var(--text-unaccented_text-color); }
+  .tree__empty { padding: 12px 38px; font-size: var(--font-font-size-font-size_m); color: var(--text-unaccented_text-color); }
 
-  .glossary { margin-top: 20px; }
-  .glossary dl { display: grid; grid-template-columns: 160px 1fr; gap: 8px 16px; margin: 0; font-size: 14px; }
-  @media (max-width: 560px) { .glossary dl { grid-template-columns: 1fr; } .glossary dd { margin-bottom: 8px; } }
-  .glossary dt { font-weight: 600; }
-  .glossary dd { margin: 0; color: var(--muted); }
+  /* ===== Карточка договора ===== */
+  .crumb__icon { font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-label_icon-color); margin-right: 6px; }
+  .crumb__company { margin-left: 12px; }
+  /* Кнопки ✓ / ✎ — как в Saby (bu.sabyd.ru): правый край кнопки на 12px от правого края блока */
+  .crumb .crumb__action { margin-left: auto; margin-right: 12px; }
+  .save-btn {   /* Button: filled, success, circle, size l (28), иконка 24 белая */
+    all: unset; box-sizing: border-box; cursor: pointer; width: 28px; height: 28px; border-radius: 100px; display: flex; align-items: center; justify-content: center;
+    background: var(--background-contrast-success_color); color: var(--icon-contrast_icon-color);
+    font-family: var(--icon-font-family-m_icon_font-family); font-size: var(--icon-icon_size-icon-size_m); line-height: 24px;
+  }
+  .save-btn:hover { background: var(--background-contrast-success_hover_color); }
+  .save-btn:active { background: var(--background-contrast-success_active_color); }
+  .edit-btn {   /* linkButton, только иконка 24, цвет secondary, при наведении secondary_hover; без подложки */
+    all: unset; box-sizing: border-box; cursor: pointer; width: 24px; height: 28px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--icon-font-family-m_icon_font-family); font-size: var(--icon-icon_size-icon-size_m); line-height: 24px;
+    color: var(--icon-secondary_icon-color); transition: color .1s;
+  }
+  .edit-btn:hover, .edit-btn:active { color: var(--icon-secondary_hover_icon-color); }
+
+  .cblocks { display: flex; flex-direction: column; gap: 8px; }
+  /* Блоки карточки — как в Saby: r12, отступы 16 сверху/снизу и 12 по бокам, строки 24, зазор 8 */
+  .cblock { background: var(--background-background-color); border-radius: 12px; /* нет токена */ padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .cblocks > .cblock:first-child { padding-bottom: 12px; gap: 12px; }
+  .cblock--list { padding: 12px; gap: 8px; }
+  .cblock__row { display: flex; align-items: center; gap: 8px; min-height: 24px; font-size: var(--font-font-size-font-size_m); }
+  .lbl { color: var(--text-label_text-color); flex: none; }
+  .lbl--w { width: 60px; }
+  .info-i { font-style: normal; font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-label_icon-color); cursor: help; }
+  .link { all: unset; cursor: pointer; color: var(--text-link_text-color); }
+  .link:hover { color: var(--text-link_hover_text-color); }
+  .is-view .link--edit { color: var(--text-text-color); cursor: default; }
+
+  .bankhead { display: flex; align-items: center; gap: 12px; }
+  .bankhead img { width: 40px; height: 40px; flex: none; }
+  .bankhead__name { font-size: var(--font-font-size-font-size_4xl); font-weight: 600; /* нет токена */ letter-spacing: -0.28px; flex: none; }
+  .uline { all: unset; box-sizing: border-box; flex: 1 1 0; min-width: 0; height: 24px; border-bottom: 1px solid var(--border-pale_border-color);
+    font-size: var(--font-font-size-font-size_m); color: var(--text-text-color); }
+  .uline::placeholder { color: var(--text-readonly_text-color); }
+  .uline:focus { border-bottom-color: var(--text-label_text-color); }
+  .uline--note { font-size: var(--font-font-size-font-size_l); }
+  .uline--note::placeholder { color: var(--text-unaccented_text-color); }
+  /* Строка «Договор № … от …» — как на проде: поле номера тянется до «от» */
+  /* Реквизиты терминала (Figma «Мастер подключения договоров», ДОГОВОР_терминал/Пустой):
+     «№ договора (мерчанта)» → поле → «от» → дата 62 → календарь, зазоры 8; ниже подсказка 13px */
+  .cblocks > .cblock--req:first-child { gap: 16px; } /* строка договора на 20px ниже линии примечания, как в макете */
+  .contract-no { gap: 8px; }
+  .contract-no__num { flex: 1 1 0; }
+  .contract-no .uline--date { width: 62px; }
+  .contract-no .contract-no__cal { width: 16px; text-align: center; cursor: pointer; }
+  .is-view .contract-no__cal { visibility: hidden; }
+  .contract-no .uline--date::placeholder { color: var(--text-text-color); }
+  /* Строка банка (новый макет): название 20, крестик 16, примечание 15, меню справа; общая линия снизу */
+  .bankhead__line { flex: 1 1 0; min-width: 0; display: flex; align-items: baseline; padding-bottom: 6px;
+    border-bottom: 1px solid #d2d6da; /* нет токена: цвет линии из макета */ }
+  .bankhead__clear { all: unset; cursor: pointer; margin: 0 10px 0 2px; line-height: 1; font-family: "cbuc-icons"; font-size: 16px; color: var(--text-readonly_text-color); }
+  .bankhead__clear:hover { color: var(--text-unaccented_text-color); }
+  .bankhead__note { all: unset; flex: 1 1 0; min-width: 0; font-size: var(--font-font-size-font-size_l); color: var(--text-text-color); }
+  .bankhead__note::placeholder { color: #aab0c1; /* нет токена: цвет подсказки из макета */ }
+  .bankhead__menu { all: unset; cursor: pointer; line-height: 1; align-self: center; font-family: "cbuc-icons"; font-size: 16px; color: var(--text-readonly_text-color); }
+  .bankhead__menu:hover { color: var(--text-unaccented_text-color); }
+  .cblock__hint { margin-top: 8px; font-size: var(--font-font-size-font-size_s, 13px); line-height: 16px; color: var(--text-unaccented_text-color); }
+  .cblock__hint .link { cursor: pointer; }
+  .cblock--notify { padding: 12px; gap: 6px; }
+  .cblock--notify .cblock__hint { margin-top: 0; }
+  /* Получатели уведомлений (Figma 20858:148861 просмотр / 20858:148905 редактирование) */
+  .recips { display: flex; align-items: center; gap: 8px; min-height: 24px; min-width: 0; font-size: var(--font-font-size-font-size_m); }
+  .recips__list { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 255px; overflow: hidden; white-space: nowrap; }
+  .is-view .recips__list { max-width: 320px; }
+  .recips__list.is-over::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 25px;
+    background: linear-gradient(to right, transparent, var(--background-background-color)); }
+  .recips__name { flex: none; color: var(--text-text-color); display: inline-flex; align-items: center; gap: 2px; }
+  .recips__x, .recips__clear { all: unset; cursor: pointer; font-family: "cbuc-icons"; font-size: 16px; line-height: 1; color: var(--text-readonly_text-color); }
+  .recips__x:hover, .recips__clear:hover { color: var(--text-unaccented_text-color); }
+  .recips__more { flex: none; color: var(--text-label_text-color); }
+  .recips__add { all: unset; cursor: pointer; flex: none; color: var(--text-label_text-color); }
+  .recips__add:hover { color: var(--text-label_hover_text-color); }
+  .recips__empty { color: var(--text-text-color); }
+  .uline--date { flex: none; width: 58px; }
+  .uline--pct { flex: none; width: 34px; text-align: right; }
+  .is-view .uline { border-bottom-color: transparent; pointer-events: none; }
+  .note-view { font-size: var(--font-font-size-font-size_l); color: var(--text-unaccented_text-color); flex: 1 1 0; }
+  .status { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 12px; /* нет токена */
+    background: var(--background-success_hover_background-color); font-size: var(--font-font-size-font-size_m); }
+  .status::before { content: ""; width: 6px; height: 6px; border-radius: 3px; background: var(--icon-success_icon-color); }
+
+  .notice { padding: 10px 12px; border-radius: 12px; /* нет токена */ background: var(--background-info_hover_background-color);
+    font-size: var(--font-font-size-font-size_l); line-height: 1.35; color: var(--text-label_contrast_text-color); }
+  .cblock .btn { align-self: flex-start; }
+  .cblock .switch { --sw: 1; }
+  .cblock .switch__caption { color: var(--text-label_text-color); font-size: var(--font-font-size-font-size_m); }
+  .is-view .switch { opacity: .5; }
+  .cblock__title { font-size: 16px; line-height: 20px; display: flex; align-items: center; gap: 12px; padding-top: 2px; }
+  .plus { all: unset; cursor: pointer; width: 32px; height: 24px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--background-contrast-pale_color); font-family: var(--icon-font-family-m_icon_font-family); font-size: 20px; color: var(--icon-icon-color); }
+  .plus:hover { background: var(--background-hover_background-color); }
+  /* Комиссия (по макету): «Комиссия» 16, поле 35px с линией, «%» и «по договору» 14 цвета метки, зазоры 8/6/6/6 */
+  .cblock--fee { gap: 12px; }
+  .fee { display: flex; align-items: center; height: 24px; }
+  .fee__title { font-size: 16px; margin-right: 12px; }
+  .fee__input { flex: none; width: 38px; text-align: right; border-bottom-color: #d2d6da; /* нет токена: цвет линии поля из макета */ margin-right: 8px; }
+  .fee .lbl { font-size: var(--font-font-size-font-size_m); margin-right: 6px; }
+  .is-view .fee__input { border-bottom-color: transparent; }
+  .cblock__desc { font-size: var(--font-font-size-font-size_m); line-height: 1.4; color: var(--text-readonly_text-color); }
+  .cblock__empty { color: var(--components-list-placeholder_text-color_list); }
+  .term-row { display: flex; align-items: center; gap: 4px; min-height: 24px; padding-left: 4px; font-size: var(--font-font-size-font-size_m); }
+  .term-row__id { color: var(--text-label_text-color); }
+  .term-row__del { all: unset; cursor: pointer; margin-left: auto; width: 24px; height: 24px; text-align: center; line-height: 24px;
+    font-family: var(--icon-font-family-m_icon_font-family); font-size: 24px; color: var(--icon-danger_icon-color); visibility: hidden; }
+  .term-row:hover .term-row__del { visibility: visible; }
+  .term-row__del:hover { color: var(--icon-danger_hover_icon-color); }
+
+  /* Подсказка внизу панели */
+  .hint { position: relative; display: flex; align-items: flex-end; min-height: 130px; margin: 0 8px 12px; padding: 0 0 0 12px; cursor: default; }
+  .hint[data-go] { cursor: pointer; }
+  .hint__text { flex: 1 1 0; padding: 0 12px 4px 0; max-width: 330px; }
+  .hint__title { margin: 0 0 12px; font-size: 17px; font-weight: 600; /* нет токена */ letter-spacing: -0.24px; }
+  .hint__desc { margin: 0 0 12px; font-size: var(--font-font-size-font-size_l); line-height: 1.33; letter-spacing: -0.2115px; }
+  .hint__link { font-size: var(--font-font-size-font-size_m); color: var(--text-link_text-color); text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+  .hint__link i { font-style: normal; font-family: "cbuc-icons"; font-size: 16px; }
+  .hint__img { width: 170px; height: 130px; flex: none; object-fit: contain; }
+
+  /* Тулбар справа (Тулбар Saby Trade) — в ui-kit нет, по макету */
+  .side-toolbar { flex: none; width: 52px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .side-toolbar__bottom { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+  .round {
+    box-sizing: border-box; width: 32px; height: 32px; border-radius: 16px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background: var(--background-contrast-pale_color);
+    border: 1px solid var(--border-pale_border-color); color: var(--icon-icon-color); font-family: "cbuc-icons"; font-size: 16px;
+  }
+  .round--date { font-family: var(--font-font-family-default); line-height: 10px; }
+  .round--date b { font-size: 14px; font-weight: 400; }
+  .round--date small { font-size: 12px; }
+  .round--help { background: var(--background-info_hover_background-color); border-color: #e1dbff; /* нет токена */
+    color: var(--icon-info_icon-color); font-family: var(--icon-font-family-m_icon_font-family); font-size: 24px; }
+
+  /* ===== Страница «Эквайринг» (Первый вход) — окружение компонента ===== */
+  .page { position: absolute; inset: 0; display: flex; background: var(--background-unaccented_background-color); }
+  .acc { width: 200px; flex: none; background: #2e3c4e; /* нет токена: фон аккордеона Saby */ color: #fff; padding: 10px 0; box-sizing: border-box; }
+  .acc__logo { display: flex; align-items: center; gap: 8px; padding: 2px 16px 12px; font-size: 22px; font-weight: 500; }
+  .acc__logo img { width: 22px; height: 24px; filter: brightness(0) invert(1) sepia(1) hue-rotate(170deg) saturate(4); }
+  .acc__group { padding: 4px 20px 10px; font-size: 10px; letter-spacing: .08em; color: #8b96a6; /* нет токена */ text-transform: uppercase; }
+  .acc__item { display: flex; align-items: center; gap: 12px; height: 41px; padding: 0 16px 0 18px; font-size: 15px; color: #e8ecf1; }
+  .acc__item i { font-style: normal; font-family: "Accordion-Font"; font-size: 24px; color: #8b96a6; width: 24px; text-align: center; }
+  .acc__item b { margin-left: auto; font-weight: 400; font-size: 13px; color: #8b96a6; }
+  .acc__item b.hot { color: #f47843; margin-left: auto; }
+  .acc__item b.hot + b { margin-left: 6px; }
+  .acc__item.is-open { background: rgba(255,255,255,.06); border-radius: 8px; margin: 0 6px; padding-left: 12px; }
+  .acc__sub { height: 38px; display: flex; align-items: center; padding-left: 60px; font-size: 15px; border-left: 3px solid #4a9cf5; margin-left: 0; background: rgba(255,255,255,.06); }
+  .pg { flex: 1 1 0; position: relative; }
+  .pg__tabs { position: absolute; right: 80px; top: 50px; display: flex; gap: 24px; font-size: 15px; color: var(--text-secondary_text-color); }
+  .pg__tabs span.is-active { color: var(--text-primary_text-color); box-shadow: inset 0 -2px 0 var(--text-primary_text-color); padding-bottom: 6px; }
+  .pg__user { position: absolute; right: 22px; top: 14px; font-size: 13px; font-weight: 600; color: var(--text-label_contrast_text-color); }
+  .pg__body { position: absolute; left: 64px; top: 170px; width: 640px; }
+  .pg__title { margin: 0 0 18px; font-size: 24px; font-weight: 400; color: var(--text-label_text-color); letter-spacing: -0.34px; }
+  .chips { display: flex; gap: 8px; margin-bottom: 26px; }
+  .chip { all: unset; cursor: pointer; height: 32px; padding: 0 14px 0 8px; display: inline-flex; align-items: center; gap: 8px;
+    background: var(--background-background-color); border-radius: 16px; font-size: 15px; box-shadow: 0 0 0 1px var(--border-pale_border-color); }
+  .chip img { width: 20px; height: 20px; }
+  .chip--more { padding: 0 8px; font-weight: 700; letter-spacing: 1px; }
+  .chip:hover { background: var(--background-hover_background-color); }
+  .pg__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pg__cols .caption { padding-left: 0; }
+  .pg__cols .menu-card { min-height: 200px; }
+  .pg__cols .menu-item__desc { white-space: normal; }
+
+  /* Окна поверх экрана: промо (Чеки от ЮKassa, Рассрочка), «Подключение к ЮKassa», подтверждение */
+  .modal { position: absolute; inset: 0; background: rgba(0,0,0,.2); /* нет токена */ display: flex; align-items: center; justify-content: center; z-index: 5; }
+  .modal[hidden] { display: none; }
+  .dialog { position: relative; background: var(--background-background-color); border-radius: 16px; /* нет токена */
+    box-shadow: 0 6px 24px rgba(0,0,0,.18); /* нет токена */ padding: 24px; box-sizing: border-box; }
+  .dialog .dialog__close, .pins .dialog .dialog__close { position: absolute; right: -14px; top: -14px; left: auto; }
+  .pins .dialog__close::after { display: none; }
+  .promo { width: 550px; display: flex; gap: 16px; }
+  .promo__text { flex: 1 1 0; }
+  .promo__title { margin: 0 0 18px; font-size: 20px; font-weight: 600; letter-spacing: -0.28px; }
+  .promo__lead { margin: 0 0 6px; font-size: 16px; line-height: 1.3; }
+  .promo ul { margin: 0 0 24px; padding-left: 20px; font-size: 16px; line-height: 1.45; }
+  .promo__actions { display: flex; align-items: center; gap: 16px; }
+  .promo__img { width: 166px; height: 180px; flex: none; object-fit: contain; }
+  .promo__img--wide { object-fit: cover; object-position: 30% 0; border-radius: 12px; background: #e6faf4; /* нет токена: подложка иллюстрации */ }
+  .yk { width: 336px; text-align: center; padding: 24px 24px 22px; }
+  .yk img { width: 40px; height: 40px; }
+  .yk__title { margin: 8px 0 14px; font-size: 17px; font-weight: 600; }
+  .yk__text { margin: 0 0 6px; font-size: 14px; line-height: 1.35; }
+  .yk__actions { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 22px; }
+  .confirm { width: 350px; padding: 24px; text-align: center; }
+  .confirm p { margin: 8px 0 22px; font-size: 15px; }
+  .btn-primary { all: unset; cursor: pointer; height: 32px; padding: 0 16px; border-radius: 16px; background: var(--icon-primary_icon-color); color: #fff; font-size: 15px; display: inline-flex; align-items: center; }
+  .btn-primary:hover { background: var(--icon-primary_hover_icon-color); }
+
+  /* «Можно подключить» (есть договоры) */
+  .avail { padding: 8px 0; border-radius: 12px; /* нет токена */ }
+  .avail__row { display: flex; align-items: center; gap: 6px; min-height: 31px; padding: 0 12px; font-size: 15px; }
+  .avail__row img { width: 16px; height: 16px; }
+  .avail__row i { font-style: normal; font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-secondary_icon-color); width: 16px; text-align: center; }
+  .avail__row small { color: var(--text-unaccented_text-color); font-size: 13px; }
+  .avail__row--l1 { padding-left: 34px; } .avail__row--l2 { padding-left: 56px; }
+  .avail__row--go { cursor: pointer; } .avail__row:hover { background: var(--background-hover_background-color); }
+  .avail__m { color: var(--text-secondary_text-color); margin-left: 4px; }
+
+  /* Точки-подсказки (переключатель «Точки») — отмечают кликабельные места, как пины в прототипе Figma */
+  .pins [data-pin] { position: relative; }
+  .pins [data-pin]::after { content: ""; position: absolute; right: 8px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 3px;
+    background: #4cc3c3; /* нет токена: цвет пинов макета */ pointer-events: none; }
+  /* Компактные элементы — точка снаружи справа, чтобы не закрывать текст */
+  .pins .back[data-pin]::after, .pins .tumbler__item[data-pin]::after, .pins .chip[data-pin]::after,
+  .pins .link[data-pin]::after, .pins .btn[data-pin]::after, .pins .btn-primary[data-pin]::after { right: -12px; }
+  .pins .chip[data-pin] { margin-right: 6px; }
+  /* Круглые кнопки — точка у правого верхнего угла снаружи */
+  .pins .close-button[data-pin]::after, .pins .save-btn[data-pin]::after, .pins .edit-btn[data-pin]::after, .pins .plus[data-pin]::after {
+    right: -9px; top: 0; margin-top: 0; }
+  /* Строки реестров и подсказка — точка в свободном поле справа */
+  .pins .node[data-pin]::after, .pins .avail__row[data-pin]::after { right: 10px; }
+  .pins .hint[data-pin]::after { top: 14px; right: 0; margin-top: 0; }
+  .demo-pins { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font: 14px var(--font-font-family-default), sans-serif; }
+
+  /* Подсказка демо о переходе в состояние следующего пакета */
+  .toast {
+    position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px;
+    background: #333; color: #fff; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; /* нет токена: служебное */
+  }
+  .toast.is-shown { opacity: 1; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <span class="badge">DEMO · no real payments</span>
-    <h1>How card acquiring works</h1>
-    <p>Pick a test card and press <b>Pay</b> to see what happens between the checkout button and the "Payment successful" screen: the merchant, acquirer, card network and issuing bank all take part.</p>
-  </header>
-
-  <div class="grid">
-    <section class="panel">
-      <h2>Checkout</h2>
-      <div class="order"><span>Coffee beans, 1 kg</span><span>$18.00</span></div>
-      <div class="order"><span>Delivery</span><span>$4.00</span></div>
-      <div class="order total"><span>Total</span><span>$22.00</span></div>
-
-      <h2 style="margin-top:18px">Test card</h2>
-      <label class="card-opt">
-        <input type="radio" name="card" value="ok" checked>
-        <span><span class="card-num">4000 •••• •••• 0001</span><br><span class="card-hint">Approved</span></span>
-      </label>
-      <label class="card-opt">
-        <input type="radio" name="card" value="3ds">
-        <span><span class="card-num">4000 •••• •••• 3220</span><br><span class="card-hint">Requires 3-D Secure, then approved</span></span>
-      </label>
-      <label class="card-opt">
-        <input type="radio" name="card" value="funds">
-        <span><span class="card-num">4000 •••• •••• 9995</span><br><span class="card-hint">Declined: insufficient funds</span></span>
-      </label>
-      <button id="pay">Pay $22.00</button>
-      <p class="note">Everything runs in your browser. No card data is entered or sent anywhere.</p>
-    </section>
-
-    <section class="panel">
-      <h2>Behind the scenes</h2>
-      <div class="flow">
-        <div class="node" id="n-customer"><b>Customer</b>browser</div>
-        <div class="node" id="n-merchant"><b>Merchant</b>online store</div>
-        <div class="node" id="n-acquirer"><b>Acquirer</b>merchant's bank</div>
-        <div class="node" id="n-network"><b>Network</b>Visa / MC</div>
-        <div class="node" id="n-issuer"><b>Issuer</b>customer's bank</div>
+<div class="stage" id="stage">
+  <div class="page" id="page"></div>
+  <section class="contract" aria-label="Подключение договора эквайринга">
+    <div class="contract__main" id="screen"></div>
+    <aside class="side-toolbar" aria-label="Тулбар">
+      <button type="button" class="close-button close-button--functional-button close-button--size-l" aria-label="Закрыть" data-go="Первый вход"></button>
+      <div class="side-toolbar__bottom">
+        <div class="round round--date" title="Календарь"><b>1</b><small>пн</small></div>
+        <div class="round" title="Звонки">&#xEA8E;</div>
+        <div class="round" title="Сообщения">&#xE65D;</div>
+        <div class="round round--help" title="Помощь">&#xE9C9;</div>
       </div>
-      <ol class="log" id="log"><li class="empty" style="border:0;background:none">Press "Pay" to start.</li></ol>
-      <div class="result" id="result"></div>
-    </section>
-  </div>
-
-  <section class="panel glossary">
-    <h2>Glossary</h2>
-    <dl>
-      <dt>Acquiring</dt><dd>A bank service that lets a business accept card payments and receive the money on its account.</dd>
-      <dt>Acquirer</dt><dd>The merchant's bank. It processes payments and settles funds to the merchant.</dd>
-      <dt>Issuer</dt><dd>The bank that issued the customer's card. It approves or declines each payment.</dd>
-      <dt>Card network</dt><dd>Visa, Mastercard and others: route messages between acquirer and issuer.</dd>
-      <dt>3-D Secure</dt><dd>An extra check where the customer confirms the payment with the issuer (code, app push).</dd>
-      <dt>Authorization</dt><dd>The issuer reserves the amount on the card. Money moves later.</dd>
-      <dt>Settlement</dt><dd>Usually 1–3 days later, the acquirer transfers the funds, minus its fee, to the merchant.</dd>
-    </dl>
+    </aside>
   </section>
+  <div class="modal" id="modal" hidden></div>
+  <div class="toast" id="toast"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/demo-frame/demo-frame.js"></script>
 <script>
-  const nodes = ["customer", "merchant", "acquirer", "network", "issuer"];
-  const logEl = document.getElementById("log");
-  const resultEl = document.getElementById("result");
-  const payBtn = document.getElementById("pay");
-  const wait = ms => new Promise(r => setTimeout(r, ms));
-  let t0 = 0;
+/* ---------- Данные ---------- */
+const LOGO = {
+  'Любой банк': 'anybank.svg', 'Альфа-Банк': 'alfa.svg', 'Газпромбанк': 'gazprom.svg', 'Модульбанк': 'modul.svg',
+  'PayAnyWay': 'payanyway.png', 'Промсвязьбанк': 'psb.svg', 'PayKeeper': 'paykeeper.svg', 'Райффайзенбанк': 'raif.svg',
+  'Сбер': 'sber.svg', 'Т-Банк': 'tbank.svg', 'Уралпромбанк': 'uralprom.svg', 'ЮKassa': 'yookassa.svg', 'Saby': 'saby.svg',
+  'Русский Стандарт': 'russt.svg', 'Долями': 'dolyami.svg', 'Точка': 'tochka.svg', 'Сбер корпорациям': 'sber.svg', 'Сбер новый': 'sber.svg', 'CloudPayments': 'cloudpayments.png',
+};
+const PARTNERS_MAIN = ['Альфа-Банк','Газпромбанк','Модульбанк','PayAnyWay','Промсвязьбанк','PayKeeper','Райффайзенбанк','Сбер','Т-Банк','Уралпромбанк'];
 
-  function highlight(ids, cls = "active") {
-    nodes.forEach(n => document.getElementById("n-" + n).className = "node");
-    ids.forEach(n => document.getElementById("n-" + n).classList.add(cls));
-  }
-  function log(text, cls = "") {
-    const li = document.createElement("li");
-    if (cls) li.className = cls;
-    const ms = Math.round(performance.now() - t0);
-    li.innerHTML = `<small>+${ms} ms</small>${text}`;
-    logEl.appendChild(li);
-  }
+const HINTS = {
+  internet: { title: 'Интернет-платежи', img: 'img/hints/internet.png',
+    text: 'Отправляйте клиентам ссылку на оплату в мессенджерах, по СМС, электронной почте или подключите оплату на сайте' },
+  qr: { title: 'Оплата по QR-коду', img: 'img/hints/qr.svg',
+    text: 'Мгновенная оплата без ввода данных карт — проще для клиента, выше шанс покупки' },
+  saving: { title: 'Сохранение способов оплаты', img: 'img/hints/saving.png',
+    text: 'Клиент сохраняет карту или счет СБП — следующие оплаты проходят без повторного ввода данных' },
+  cash: { title: 'Кассовая ссылка', img: 'img/hints/cashlink.png',
+    text: 'Покупатель сканирует QR-код или прикладывает телефон к NFC-табличке — сумма покупки подставляется автоматически. Вы экономите на комиссии' },
+};
 
-  async function run(scenario) {
-    payBtn.disabled = true;
-    logEl.innerHTML = "";
-    resultEl.className = "result";
-    t0 = performance.now();
+const ORGS = [
+  ['Сбербанк, ПАО','Москва'],['Альфа-Банк, ПАО','Москва','пустая_терминал'],['Банк ВТБ, ПАО','Санк-Петербург'],['Банк ГПБ, АО','Москва'],
+  ['Газпром Капитал, ООО','Санкт-Петербург'],['Велес Актив, ООО','Москва'],['Россельхозбанк, АО','Москва'],
+  ['Московский Кредитный Банк Объединенного сообщества, ПАО','Москва'],['АКБ “Анигма”','Москва'],['Солар, ООО','Москва'],
+  ['Ватага, ООО','Москва'],['Цифровые Активы, ООО','Москва'],['ЛУКойл, ПАО','Москва'],['Банк ВТБ, ПАО','Санк-Петербург'],
+  ['Банк ГПБ, АО','Москва'],['Газпром Капитал, ООО','Санкт-Петербург'],['Велес Актив, ООО','Москва'],['Россельхозбанк, АО','Москва'],
+  ['Камчатский Кредитный Банк Объединенного сообщества, ПАО','Москва'],['АКБ “Анигма”','Москва'],['Солар, ООО','Москва'],['Ватага, ООО','Москва'],
+];
 
-    highlight(["customer", "merchant"]);
-    log("Customer presses <b>Pay</b>; the store creates an order for $22.00.");
-    await wait(700);
+/* Компании и точки продаж (выбор компании) */
+const COMPANIES = [
+  { name: 'Мили, ООО', open: true, points: [
+    ['Ресторан Мили', 'Ярославль, ул. Угличская, 36/44'], ['Столовая', 'Ярославль, ул. Московская, 4'],
+    ['Бар "Седьмое время"', 'Ярославль, ул. Ивановская, 13'] ] },
+  { name: 'Мили, ООО (С-Пб)', open: false, points: [
+    ['Кафе на Невском', 'Санкт-Петербург, Невский пр., 28'], ['Столовая №2', 'Санкт-Петербург, ул. Рубинштейна, 5'] ] },
+  { name: 'База отдыха "Мили, ООО"', addr: 'Ярославль, ул. Угличская, 36/44' },
+  { name: 'Агенство "Квеста"', addr: 'Москва, ул. Краснопресненская, 12' },
+  { name: 'Мегастрой, ООО', addr: 'Ярославль, ул. Угличская, 36/44' },
+  { name: 'СБИС ЭО, ООО (Кострома)', addr: 'Кострома, ул. Ленинская, 45' },
+  { name: 'Офис-Т, ООО', addr: 'Ярославль, ул. Угличская, 36/44' },
+  { name: 'Стройкапитал, ООО', addr: 'Ярославль, ул. Парковая 3-я, 7/17' },
+  { name: 'Автотехцентр «Бумер76»', addr: 'Ярославль, ул. Угличская, 36/44' },
+  { name: 'Агидель Авто, ООО ТД', addr: 'Ярославль, ул. Петровская, 76' },
+];
+let companyQuery = '';
 
-    highlight(["merchant", "acquirer"]);
-    log("Store sends a payment request to the <b>acquirer</b> (card data is tokenized, the store never stores it).");
-    await wait(800);
+/* Карточка договора: данные трёх веток, сохраняются между состояниями */
+const CARDS = {
+  sbp:      { icon: '&#xE915;', method: 'QR-код', login: '', password: '', note: '', pwEdit: false, sw: {},
+              notice: 'Подключите прием оплат по QR-кодам СБП в банке и выполните настройки, следуя',
+              states: { empty: 'пустая_СБП', edit: 'заполненная карточка', view: 'просмотр карточки' }, blocks: ['cash', 'points'] },
+  internet: { icon: '&#xE6D1;', method: 'Интернет-платежи', login: '', password: '', note: '', pwEdit: false, sw: {},
+              notice: 'Подключитесь к интернет-платежам в банке и выполните настройки, следуя',
+              states: { empty: 'пустая _интернет', edit: 'интернет_заполненная', view: 'интернет_просмотр' }, blocks: ['points'] },
+  terminal: { icon: '&#xE71B;', method: 'Терминал', note: '', contract: '', date: '', terminals: [], sw: {},
+              states: { edit0: 'пустая_терминал', edit: 'терминал_заполненная', view: 'терминал_просмотр' }, blocks: ['terminal'] },
+};
 
-    if (scenario === "3ds") {
-      highlight(["customer", "issuer"]);
-      log("Issuer asks for <b>3-D Secure</b>: customer confirms the payment in the bank app.", "warn");
-      await wait(1200);
-      log("3-D Secure passed ✓", "ok");
-      await wait(500);
+/* Клики, которые в прототипе ведут за пределы компонента «ДОГОВОР» */
+const OTHER = {
+  'Variant2': 'Добавление точек продаж — отдельный компонент, в этот макет не входит',
+  'создание': 'Создание кассовой ссылки — отдельный компонент, в этот макет не входит',
+  'Т-Банк': 'Т-Банк — в прототипе ведёт на другой экран', 'Saby': 'Saby — в прототипе ведёт на другой экран',
+  'Любой банк': 'Любой банк — в прототипе ведёт на другой экран',
+};
+
+/* Рассрочка «Долями» */
+const DOLYAMI = { partner: '', login: '', password: '', key: '', secret: '' };
+const DOLYAMI_DEMO = { partner: '20540410727110000', login: 'mili@tensor.ru', password: 'mili-password', key: '', secret: '2lKbnfj355Ytgb5fVbbRsxxHos2lKbnfj355Ytgb5fVbb2lKbnfj3TGb5' };
+
+/* ---------- Разметка ---------- */
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const go = (to) => to ? ` data-go="${esc(to)}"` : '';
+/* Точка-подсказка — только на главном шаге экрана, а не на каждом клике */
+const pin = (on) => on ? ' data-pin' : '';
+
+const menuItem = (icon, title, desc, to) => `
+  <button class="menu-item" type="button"${go(to)}>
+    <span class="menu-item__icon" aria-hidden="true">${icon}</span>
+    <span class="menu-item__text"><span class="menu-item__title">${title}</span><span class="menu-item__desc">${desc}</span></span>
+  </button>`;
+
+const bank = (name, to) => `
+  <button class="bank" type="button"${go(to)}${pin(to && name === 'Альфа-Банк')}><img src="img/banks/${LOGO[name]}" alt="">${esc(name)}</button>`;
+const banks = (list, links = {}) => `<div class="banks">${list.map(n => bank(n, links[n])).join('')}</div>`;
+const caption = (t) => `<h2 class="caption">${t}</h2>`;
+
+const method = (icon, title, desc, to) => `
+  <button class="method" type="button"${go(to)}${pin(to)}>
+    <span class="method__icon" aria-hidden="true">${icon}</span>
+    <span><div class="method__title">${title}</div><div class="method__desc">${desc}</div></span>
+  </button>`;
+
+const hint = (k, to) => { const h = HINTS[k]; return `
+  <div class="contract__foot"><div class="hint"${go(to)}>
+    <div class="hint__text">
+      <p class="hint__title">${h.title}</p><p class="hint__desc">${h.text}</p>
+      <a class="hint__link" href="#" onclick="return false">Узнать детали <i aria-hidden="true">&#xEB1C;</i></a>
+    </div>
+    <img class="hint__img" src="${h.img}" alt="">
+  </div></div>`; };
+
+let ACQ = 'тип2';   // последний выбранный вариант экрана «Эквайеры»
+const startHead = (view) => `
+  <header class="head">
+    <h1 class="head__title">Начните прием оплаты</h1>
+    <div class="tumbler" role="radiogroup" aria-label="Показать">
+      <button type="button" class="tumbler__item${view === 'methods' ? ' is-selected' : ''}" role="radio" aria-checked="${view === 'methods'}" data-go="тип"><span class="tumbler__caption">способы оплаты</span></button>
+      <button type="button" class="tumbler__item${view === 'acq' ? ' is-selected' : ''}" role="radio" aria-checked="${view === 'acq'}" data-go="${ACQ}"><span class="tumbler__caption">эквайеры</span></button>
+    </div>
+  </header>`;
+
+const subHead = (crumb, title, back) => `
+  <div class="crumb">${crumb}</div>
+  <div class="backrow"><button type="button" class="back back--size-4xl back--color-default back--icon-primary"${go(back)}>
+    <span class="back__icon"></span><span class="back__caption">${title}</span></button></div>`;
+
+const body = (html) => `<div class="contract__body">${html}</div>`;
+
+/* Выбор компании: шапка с поиском + дерево. next — состояние карточки договора */
+const companyTree = (next) => {
+  const q = companyQuery.trim().toLowerCase();
+  const hit = (s) => !q || s.toLowerCase().includes(q);
+  const rows = COMPANIES.map((c, i) => {
+    if (c.points) {
+      const pts = c.points.filter(([n, a]) => hit(n) || hit(a));
+      if (!hit(c.name) && !pts.length) return '';
+      const open = c.open || (q && pts.length);
+      const list = hit(c.name) ? c.points : pts;
+      return `<div class="node node--company">
+          <span class="node__exp" data-toggle="${i}" aria-label="${open ? 'Свернуть' : 'Развернуть'}">${open ? '&#xE9C1;' : '&#xE9C2;'}</span>
+          <span class="node__title">${esc(c.name)}</span></div>` +
+        (open ? list.map(([n, a]) => `<div class="node node--child"${go(n === 'Ресторан Мили' ? next : '')}${pin(n === 'Ресторан Мили')}>
+          <span><div class="node__title">${esc(n)}</div><div class="node__addr">${esc(a)}</div></span></div>`).join('') : '');
     }
+    if (!hit(c.name) && !hit(c.addr)) return '';
+    return `<div class="node"><span><div class="node__title">${esc(c.name)}</div><div class="node__addr">${esc(c.addr)}</div></span></div>`;
+  }).join('');
+  return `<div class="card tree" id="tree" data-next="${esc(next)}">${rows || '<div class="tree__empty">Ничего не найдено</div>'}</div>`;
+};
+const companyScreen = (crumb, back, next) => `
+  <div class="crumb">${crumb}<span class="crumb__acq">Альфа-Банк</span>
+    <label class="search"><input type="text" placeholder="Найти" value="${esc(companyQuery)}" data-search="${esc(next)}"><i aria-hidden="true">&#xE662;</i></label>
+  </div>
+  <div class="backrow"><button type="button" class="back back--size-4xl back--color-default back--icon-primary"${go(back)}>
+    <span class="back__icon"></span><span class="back__caption">Выберите компанию</span></button></div>` +
+  body(companyTree(next));
 
-    highlight(["acquirer", "network"]);
-    log("Acquirer forwards the authorization request to the <b>card network</b>.");
-    await wait(700);
-
-    highlight(["network", "issuer"]);
-    log("Network routes it to the <b>issuing bank</b>, which checks the balance, limits and fraud signals.");
-    await wait(1000);
-
-    if (scenario === "funds") {
-      highlight(["issuer"], "bad");
-      log("Issuer <b>declines</b>: insufficient funds (response code 51).", "bad");
-      await wait(600);
-      highlight(["merchant", "customer"], "bad");
-      log("Decline travels back: network → acquirer → store → customer.", "bad");
-      resultEl.className = "result bad";
-      resultEl.textContent = "Payment declined. No money was reserved.";
-    } else {
-      highlight(["issuer"], "ok");
-      log("Issuer <b>approves</b> and reserves $22.00 on the card.", "ok");
-      await wait(600);
-      highlight(["merchant", "customer"], "ok");
-      log("Approval travels back: network → acquirer → store → customer.", "ok");
-      await wait(500);
-      log("Later (T+1…3 days): <b>settlement</b>, the acquirer pays the store $22.00 minus its fee.");
-      resultEl.className = "result ok";
-      resultEl.textContent = "Payment successful! Order confirmed.";
-    }
-    payBtn.disabled = false;
-  }
-
-  payBtn.addEventListener("click", () => {
-    run(document.querySelector('input[name="card"]:checked').value);
+/* Блок «Уведомлять об ошибках» с получателями: просмотр — список или «выбрать получателей», редактирование — с крестиками */
+const RECIPIENTS = ['Александров А.В.', 'Петров И.П.', 'Печорин П.Н.', 'Лебедев Д.С.', 'Смирнова О.К.', 'Волков Е.А.'];
+const notifyBlock = (c, view) => {
+  const r = c.recips || (c.recips = []);
+  let right;
+  if (!r.length) right = view
+    ? `<span class="recips__empty">выбрать получателей</span><i class="info-i" title="Подсказка">&#xE64B;</i>`
+    : `<button class="link" type="button" data-recip="pick">выбрать получателей</button>`;
+  else right = `<span class="recips__list" data-recips>${r.map((n, i) => `<span class="recips__name">${esc(n)}${view ? (i < r.length - 1 ? ',' : '') : `<button class="recips__x" type="button" title="Убрать" data-recip="del" data-i="${i}">&#xE66C;</button>`}</span>`).join(' ')}</span>
+      <span class="recips__more" data-recips-more hidden></span>
+      ${view ? '<i class="info-i" title="Подсказка">&#xE64B;</i>'
+             : `${r.length < RECIPIENTS.length ? '<button class="recips__add" type="button" data-recip="add">+ еще</button>' : ''}<button class="recips__clear" type="button" title="Очистить" data-recip="clear">&#xE66C;</button>`}`;
+  return `<div class="cblock cblock--notify">
+    <div class="recips"><span class="lbl">Уведомлять об ошибках</span>${right}</div>
+    ${view ? '' : '<div class="cblock__hint">Отправим уведомление, если возникнут проблемы с приемом оплат</div>'}</div>`;
+};
+/* Сколько получателей не поместилось — «(N)» после списка с затуханием */
+function fitRecips() {
+  screen.querySelectorAll('[data-recips]').forEach(list => {
+    const more = list.parentElement.querySelector('[data-recips-more]');
+    const box = list.getBoundingClientRect(); let hidden = 0;
+    list.querySelectorAll('.recips__name').forEach(n => { if (n.getBoundingClientRect().right > box.right + 1) hidden++; });
+    list.classList.toggle('is-over', hidden > 0); more.hidden = !hidden; more.textContent = `(${hidden})`;
   });
+}
+
+/* Карточка договора. mode: empty — форма подключения, edit — редактирование, view — просмотр */
+const sw = (key, k, caption, info) => { const c = CARDS[key]; return `
+  <div class="cblock__row"><label class="switch switch--caption-start">
+    <input class="switch__input" type="checkbox" role="switch" data-card="${key}" data-sw="${k}"${c.sw[k] ? ' checked' : ''}>
+    <span class="switch__button"></span><span class="switch__caption">${caption}</span></label>
+    ${info ? '<i class="info-i" title="Подсказка">&#xE64B;</i>' : ''}</div>`; };
+
+const card = (key, mode) => {
+  const c = CARDS[key], st = c.states, isTerm = key === 'terminal', view = mode === 'view';
+  if (isTerm && view) {            // в макете просмотр терминала уже с данными договора и терминалом
+    c.contract = c.contract || '15245636'; c.date = c.date || '12.02.22';
+    if (!c.terminals.length) c.terminals.push(['Ресторан Мили', '235885666']);
+  }
+  const action = mode === 'empty' ? '' : view
+    ? `<button class="edit-btn crumb__action" type="button" title="Редактировать"${go(st.edit)} data-pin>&#xE660;</button>`
+    : `<button class="save-btn crumb__action" type="button" title="Сохранить"${go(st.view)} data-pin>&#xE75E;</button>`;
+  const head = `<div class="crumb"><span class="crumb__icon">${c.icon}</span>${c.method}<span class="crumb__company">Мили</span>${action}</div>`;
+
+  const termEdit = isTerm && !view;   // в карточке терминала строка банка по новому макету
+  const bank = `<div class="bankhead"><img src="img/banks/alfa.svg" alt="">
+      ${termEdit
+        ? `<div class="bankhead__line"><span class="bankhead__name">Альфа-Банк</span>
+             <button class="bankhead__clear" type="button" title="Очистить" data-toast="Сменить банк">&#xE66C;</button>
+             <input class="bankhead__note" placeholder="Примечание" value="${esc(c.note)}" data-card="${key}" data-f="note">
+             <button class="bankhead__menu" type="button" title="Меню" data-toast="Меню договора">&#xEA90;</button></div>`
+        : `<span class="bankhead__name">Альфа-Банк</span>
+           ${view ? `<span class="note-view">${esc(c.note || 'Основной')}</span><span class="status">включен</span>`
+                  : `<input class="uline uline--note" placeholder="Примечание" value="${esc(c.note)}" data-card="${key}" data-f="note">`}`}
+    </div>`;
+
+  let first;
+  if (mode === 'empty') {
+    first = `<div class="cblock">${bank}
+      <div class="notice">${c.notice} <a class="link" href="#" onclick="return false">инструкции</a></div>
+      <div class="cblock__row"><span class="lbl lbl--w">Логин</span><input class="uline" placeholder="Логин с суффиксом «–api»" value="${esc(c.login)}" data-card="${key}" data-f="login"></div>
+      <div class="cblock__row"><span class="lbl lbl--w">Пароль</span><input class="uline" type="password" placeholder="Пароль от боевой среды" value="${esc(c.password)}" data-card="${key}" data-f="password"></div>
+      <button class="btn btn--outlined btn--style-secondary btn--size-m" type="button"${go(st.edit)} data-pin>Подключить</button>
+    </div>`;
+  } else if (isTerm) {
+    first = `<div class="cblock cblock--req">${bank}
+      <div><div class="cblock__row contract-no"><span class="lbl">№ договора (мерчанта)</span>
+        <input class="uline contract-no__num" value="${esc(c.contract)}" data-card="${key}" data-f="contract" aria-label="Номер договора">
+        <span class="lbl contract-no__from">от</span><input class="uline uline--date" placeholder="   .     ." value="${esc(c.date)}" data-card="${key}" data-f="date" aria-label="Дата договора">
+        <i class="info-i contract-no__cal" title="Календарь">&#xE6C4;</i></div>
+        <div class="cblock__hint">Заполните, если загружаете банковские выписки: по этим данным Saby найдет договор и подставит его в «Поступление от эквайера»</div></div>
+    </div>`;
+  } else {
+    first = `<div class="cblock">${bank}
+      <div class="cblock__row"><span class="lbl lbl--w">Логин</span><input class="uline" value="${esc(c.login || 'mili-api')}" data-card="${key}" data-f="login"></div>
+      ${view ? '' : `<div class="cblock__row"><span class="lbl lbl--w">Пароль</span>${c.pwEdit
+        ? `<input class="uline" type="password" placeholder="Новый пароль" data-card="${key}" data-f="password">`
+        : `<button class="link" type="button" data-pw="${key}">Изменить</button>`}</div>`}
+    </div>`;
+  }
+  if (mode === 'empty') return head + body(`<div class="cblocks">${first}</div>`);
+
+  const blocks = [first,
+    isTerm ? notifyBlock(c, view)   // новый блок уведомлений (Figma «Мастер подключения договоров»)
+      : `<div class="cblock">${sw(key, 'notify', 'Уведомлять об ошибках')}</div>`,
+    isTerm ? '' : `<div class="cblock">${sw(key, 'save', 'Сохранять данные для следующих оплат', true)}</div>`,
+    `<div class="cblock">
+      <div class="cblock__row"><span class="lbl">Счет учета</span><button class="link link--edit" type="button" data-toast="Выбор счета учета — отдельное окно в макете">57-03 Продажи по платежным картам</button><i class="info-i" title="Подсказка">&#xE64B;</i></div>
+      ${sw(key, 'link', 'Автоматически связывать поступления с оплатами', true)}
+      ${sw(key, 'patent', 'Доход относить к Патенту', true)}
+    </div>`,
+    `<div class="cblock cblock--fee">
+      <div class="fee"><span class="fee__title">Комиссия</span><input class="uline fee__input" value="2,5" aria-label="Комиссия, %"><span class="lbl">%</span><span class="lbl">по договору</span><i class="info-i" title="Подсказка">&#xE64B;</i></div>
+      <div class="cblock__row"><span class="lbl">Списать в расходы</span><button class="link link--edit" type="button" data-toast="Выбор варианта списания — меню в макете">в платеже от банка</button></div>
+    </div>`,
+  ];
+  if (c.blocks.includes('cash')) blocks.push(`<div class="cblock cblock--list">
+      <div class="cblock__title">Кассовая ссылка <button class="plus" type="button" title="Добавить" data-go="создание">&#xEADD;</button></div>
+      <div class="cblock__desc">Принимаете оплаты на кассе в торговой точке? Подключите новый способ оплаты. <a class="link" href="#" onclick="return false">Подробнее →</a></div></div>`);
+  if (c.blocks.includes('points')) blocks.push(`<div class="cblock cblock--list">
+      <div class="cblock__title">Точки продаж <button class="plus" type="button" title="Добавить" data-go="Variant2">&#xEADD;</button></div>
+      <div class="cblock__desc">Договор действует для всех точек продаж компании <i class="info-i" title="Подсказка">&#xE64B;</i></div></div>`);
+  if (isTerm) blocks.push(`<div class="cblock cblock--list">
+      <div class="cblock__title">Терминал ${view ? '' : '<button class="plus" type="button" title="Добавить" data-addterm="1">&#xEADD;</button>'}</div>
+      ${c.terminals.length ? c.terminals.map(([n, id], i) => `<div class="term-row"><span>${n}</span><span class="term-row__id">${id}</span>${view ? '' : `<button class="term-row__del" type="button" title="Удалить" data-delterm="${i}">&#xE65C;</button>`}</div>`).join('')
+        : '<div class="cblock__desc cblock__empty">Укажите данные терминала, чтобы в документе «Выручка розницы» верно определялся договор эквайринга</div>'}</div>`);
+  return head + `<div class="contract__body${view ? ' is-view' : ''}"><div class="cblocks">${blocks.join('')}</div></div>`;
+};
+
+/* ---------- Состояния (имена — как варианты компонента в Figma) ---------- */
+const STATES = {
+  'тип': () => startHead('methods') + body(`
+    ${caption('В торговой точке')}
+    <div class="card menu-card">
+      ${menuItem('&#xE71B;', 'Банковский терминал', 'Прием карт через терминал в точке продаж и при доставке заказа', 'терминал')}
+      ${menuItem('&#xE915;', 'QR-код', 'Покупатель сканирует код на экране или чеке и платит в приложении банка', 'QRкод')}
+      ${menuItem('&#xEC92;', 'Кассовая ссылка', 'Табличка у кассы с постоянным QR‑кодом и NFC-меткой', 'кассовая ссылка')}
+    </div>
+    ${caption('Онлайн')}
+    <div class="card menu-card">
+      ${menuItem('&#xE6D1;', 'Интернет-платежи', 'Оплата картой на сайте или по ссылке в мессенджерах и соцсетях', 'интернет')}
+      ${menuItem('&#xE915;', 'QR-код', 'Покупатель сканирует код на странице оплаты и платит в приложении банка', 'QRкод')}
+      <div class="menu-sub">Дополнительно</div>
+      ${menuItem('&#xE601;', 'Сохранение способов оплаты', 'Для быстрых повторных оплат', 'сохранение')}
+      ${menuItem('&#xE9DD;', 'Чеки от ЮKassa', 'Для онлайн-продаж без покупки кассы', 'облачная касса')}
+    </div>`),
+
+  'тип2_24': () => STATES['тип2']().replace('<div class="contract__body">', '<div class="contract__body banks-s">'),
+  'тип2': () => startHead('acq') + body(`
+    ${caption('Банковский терминал')}
+    ${banks(['Любой банк'], { 'Любой банк': 'Любой банк' })}
+    ${caption('Интернет-платежи и QR-код СБП')}
+    ${banks([...PARTNERS_MAIN, 'ЮKassa', 'Saby'], { 'Альфа-Банк': 'по эквайеру_выбор типа', 'ЮKassa': 'Variant24', 'Т-Банк': 'Т-Банк', 'Saby': 'Saby' })}
+    ${caption('Только QR-код СБП')}
+    ${banks(['Русский Стандарт', 'Сбер новый', 'Точка'])}
+    ${caption('Только интернет-платежи')}
+    ${banks(['Сбер корпорациям', 'CloudPayments'])}`),
+
+  'партнеры': () => subHead('QR-код', 'Наши партнеры', 'тип') + body(`
+    ${caption('Банковский терминал')}
+    ${banks(['Любой банк'], { 'Любой банк': 'Любой банк' })}
+    ${caption('Интернет-платежи и QR-код СБП')}
+    ${banks([...PARTNERS_MAIN, 'ЮKassa', 'Saby'], { 'Альфа-Банк': 'QRкод_компания', 'ЮKassa': 'Variant24', 'Т-Банк': 'Т-Банк', 'Saby': 'Saby' })}
+    ${caption('Только QR-код СБП')}
+    ${banks(['Русский Стандарт', 'Сбер новый', 'Точка'])}
+    ${caption('Только интернет-платежи')}
+    ${banks(['Сбер корпорациям', 'CloudPayments'])}`),
+
+  'терминал': () => subHead('Терминал', 'Наши партнеры', 'тип') + body(`
+    <div class="card orgs">${ORGS.map(([n, c, to]) => `
+      <button class="org" type="button"${go(to)}${pin(to)}><span class="org__name">${esc(n)}<small>${c}</small></span>
+        <span class="org__nums"><span class="org__num">7707083893</span><span class="org__num">7707083893</span></span></button>`).join('')}
+    </div>`),
+
+  'интернет': () => subHead('Интернет-платежи', 'Наши партнеры', 'тип') + body(
+    banks([...PARTNERS_MAIN.slice(0, 8), 'Сбер корпорациям', 'CloudPayments', 'Т-Банк', 'Уралпромбанк', 'ЮKassa'],
+      { 'Альфа-Банк': 'интернет_компания', 'Т-Банк': 'Т-Банк', 'ЮKassa': 'Variant24' })) + hint('internet'),
+
+  'QRкод': () => subHead('QR-код', 'Наши партнеры', 'тип') + body(
+    banks([...PARTNERS_MAIN, 'Русский Стандарт', 'Точка', 'ЮKassa'],
+      { 'Альфа-Банк': 'QRкод_компания', 'Т-Банк': 'Т-Банк', 'ЮKassa': 'Variant24' })) + hint('qr', 'пустая_СБП'),
+
+  'кассовая ссылка': () => subHead('Кассовая ссылка', 'Наши партнеры', 'тип') + body(
+    banks(['Альфа-Банк', 'Райффайзенбанк', 'Т-Банк', 'Уралпромбанк', 'Русский Стандарт'],
+      { 'Альфа-Банк': 'кассовая ссылка_компании', 'Т-Банк': 'Т-Банк' })) + hint('cash', 'пустая_СБП'),
+
+  'сохранение': () => subHead('Сохранение способов оплаты', 'Наши партнеры', 'тип') + body(
+    banks(['Альфа-Банк', 'Т-Банк', 'ЮKassa'], { 'Альфа-Банк': 'сохранение_тип экв', 'Т-Банк': 'Т-Банк', 'ЮKassa': 'Variant24' })) + hint('saving', 'интернет'),
+
+  'сохранение_тип экв': () => subHead('Сохранение способов оплаты', 'Выберите тип эквайринга', 'сохранение') + body(`<div class="methods">
+    ${method('&#xE6D1;', 'Интернет-платежи', 'Онлайн-оплата картами на сайтах')}
+    ${method('&#xE915;', 'QR-код СБП', 'Оплата по QR-коду или через приложение банка', 'сохранение_выбор компании')}
+  </div>`) + hint('saving', 'интернет'),
+
+  'интернет_компания': () => companyScreen('Интернет-платежи', 'интернет', 'пустая _интернет'),
+  'QRкод_компания': () => companyScreen('QR-код', 'QRкод', 'пустая_СБП'),
+  'кассовая ссылка_компании': () => companyScreen('Кассовая ссылка', 'кассовая ссылка', 'пустая_СБП'),
+  'сохранение_выбор компании': () => companyScreen('QR-код', 'QRкод', 'пустая_СБП'),
+
+  'пустая_СБП': () => card('sbp', 'empty'),
+  'заполненная карточка': () => card('sbp', 'edit'),
+  'просмотр карточки': () => card('sbp', 'view'),
+  'пустая _интернет': () => card('internet', 'empty'),
+  'интернет_заполненная': () => card('internet', 'edit'),
+  'интернет_просмотр': () => card('internet', 'view'),
+  'пустая_терминал': () => card('terminal', 'edit'),
+  'терминал_заполненная': () => card('terminal', 'edit'),
+  'терминал_просмотр': () => card('terminal', 'view'),
+
+  'по эквайеру_выбор типа': () => subHead('Альфа-Банк', 'Выберите способ оплаты', 'тип2') + body(`<div class="methods">
+    ${method('&#xE6D1;', 'Интернет-платежи', 'Онлайн-оплата картами на сайтах')}
+    ${method('&#xE915;', 'QR-код СБП', 'Оплата по QR-коду или через приложение банка', 'сохранение_выбор компании')}
+  </div>`),
+
+  'по эквайеру_выбор типа_с терминалом': () => subHead('Альфа-Банк', 'Выберите способ оплаты', 'тип2') + body(`<div class="methods">
+    ${method('&#xE71B;', 'Банковский терминал', 'Оплата картой через терминал в магазине или при доставке')}
+    ${method('&#xE6D1;', 'Интернет-платежи', 'Онлайн-оплата картами на сайтах')}
+    ${method('&#xE915;', 'QR-код СБП', 'Оплата по QR-коду или через приложение банка', 'сохранение_выбор компании')}
+  </div>`),
+};
+
+/* ---------- Пакет Г: Долями, рассрочка, облачная касса, ЮKassa; «есть договоры» ---------- */
+const dolField = (k, label, ph, type = 'text') => `
+  <div class="cblock__row"><span class="lbl" style="width:84px">${label}</span>
+    <input class="uline" type="${type}" placeholder="${ph}" value="${esc(DOLYAMI[k])}" data-dol="${k}"></div>`;
+const dolHead = (action) => `<div class="crumb"><span class="crumb__icon">&#xEA9F;</span>Рассрочка<span class="crumb__company">Мили</span>${action || ''}</div>`;
+const dolBank = `<div class="bankhead"><img src="img/banks/dolyami.svg" alt=""><span class="bankhead__name">Долями</span>
+  <input class="uline uline--note" placeholder="Примечание"></div>`;
+const dolForm = () => dolHead() + body(`<div class="cblocks"><div class="cblock">${dolBank}
+    <div class="notice">Заключите договор с сервисом и выполните настройки, следуя <a class="link" href="#" onclick="return false">инструкции</a></div>
+    ${dolField('partner', 'Partner ID', 'Укажите ID')}${dolField('login', 'Логин', 'Укажите логин')}
+    ${dolField('password', 'Пароль', 'Укажите пароль', 'password')}${dolField('key', 'Key ID', 'Укажите Key ID')}${dolField('secret', 'Secret Key', 'Укажите Secret Key')}
+    <button class="btn btn--outlined btn--style-secondary btn--size-m" type="button" data-go="долями3">Подключить</button></div></div>`);
+
+const availTree = (crumb, rows, hintKey, hintGo) => subHead(crumb, 'Можно подключить', crumb === 'Кассовая ссылка' ? 'кассовая ссылка' : 'сохранение') +
+  body(`<div class="card avail">${rows}</div>`) + hint(hintKey, hintGo);
+const aBank = (logo, name, n) => `<div class="avail__row"><i>&#xE9C1;</i><img src="img/banks/${logo}" alt=""> ${name} <small>(${n})</small></div>`;
+const aRow = (lvl, name, m, to, p) => `<div class="avail__row avail__row--l${lvl}${to ? ' avail__row--go' : ''}"${go(to)}${pin(p)}>${name}${m ? `<span class="avail__m">${m}</span>` : ''}</div>`;
+
+Object.assign(STATES, {
+  'долями1': () => { Object.keys(DOLYAMI).forEach(k => { if (DOLYAMI[k] === DOLYAMI_DEMO[k]) DOLYAMI[k] = ''; }); return dolForm(); },
+  'долями2': () => { Object.assign(DOLYAMI, DOLYAMI_DEMO); return dolForm(); },
+  'долями3': () => {
+    Object.keys(DOLYAMI_DEMO).forEach(k => { DOLYAMI[k] = DOLYAMI[k] || DOLYAMI_DEMO[k]; });
+    return dolHead(`<button class="save-btn crumb__action" type="button" title="Сохранить" data-toast="Сохранено">&#xE75E;</button>`) +
+      body(`<div class="cblocks"><div class="cblock">${dolBank.replace('<input class="uline uline--note" placeholder="Примечание">', '')}
+        ${dolField('partner', 'Partner ID', '')}${dolField('login', 'Логин', '')}
+        <div class="cblock__row"><span class="lbl" style="width:84px">Пароль</span><button class="link" type="button" data-toast="Смена пароля">Изменить</button></div>
+        ${dolField('key', 'Key ID', 'Укажите Key ID')}${dolField('secret', 'Secret Key', '')}
+        <div class="cblock__row" style="justify-content:flex-end"><span class="lbl">Ждем от банка</span><b style="font-size:20px">1 522</b><span>.49</span></div></div>
+        <div class="cblock">${sw('sbp', 'dnotify', 'Уведомлять об ошибках')}</div>
+        <div class="cblock"><div class="cblock__row"><span class="lbl">Счет учета</span><button class="link" type="button" data-toast="Выбор счета учета — отдельное окно в макете">57-03 Продажи по платежным картам</button><i class="info-i" title="Подсказка">&#xE64B;</i></div>
+          ${sw('sbp', 'dlink', 'Автоматически связывать поступления с оплатами', true)}${sw('sbp', 'dpatent', 'Доход относить к Патенту', true)}</div>
+        <div class="cblock cblock--fee"><div class="fee"><span class="fee__title">Комиссия</span><input class="uline fee__input" value="2,5" aria-label="Комиссия, %"><span class="lbl">%</span><span class="lbl">по договору</span><i class="info-i" title="Подсказка">&#xE64B;</i></div>
+          <div class="cblock__row"><span class="lbl">Списать в расходы</span><button class="link" type="button" data-toast="Выбор варианта списания — меню в макете">в платеже от банка</button></div></div>
+        <div class="cblock"><div class="cblock__title">Точки продаж <button class="plus" type="button" title="Добавить" data-go="Variant2">&#xEADD;</button></div>
+          <div class="cblock__desc">Договор действует для всех точек продаж компании <i class="info-i" title="Подсказка">&#xE64B;</i></div></div></div>`);
+  },
+  'компания_рассрочка': () => companyScreen('Рассрочка', 'партнеры', 'долями1').replace('<span class="crumb__acq">Альфа-Банк</span>', '<span class="crumb__acq">Долями</span>'),
+  'сохранение_есть договоры': () => availTree('Сохранение способов оплаты',
+    aBank('alfa.svg', 'Альфа-Банк', 3) + `<div class="avail__row avail__row--l1"><i>&#xE9C1;</i> Мили <small>(2)</small></div>` +
+    aRow(2, 'QR-код', '', 'заполненная карточка', true) + aRow(2, 'Интернет', '', 'интернет_заполненная') + aRow(1, 'Мили (С-Пб)', 'Интернет', 'интернет_заполненная') +
+    aBank('tbank.svg', 'Т-Банк', 2) + aRow(1, 'Мили', 'Интернет', 'Т-Банк') + aRow(1, 'Компания Тензор', 'Интернет', 'Т-Банк'), 'saving', 'интернет'),
+  'кассовая ссылка_есть договоры': () => availTree('Кассовая ссылка',
+    aBank('alfa.svg', 'Альфа-Банк', 2) + aRow(1, 'Мили (С-Пб)', '', 'заполненная карточка', true) + aRow(1, 'Мили', '', 'заполненная карточка') +
+    aBank('tbank.svg', 'Т-Банк', 2) + aRow(1, 'Мили', '', 'Т-Банк') + aRow(1, 'Компания Тензор', '', 'Т-Банк'), 'cash', 'пустая_СБП'),
+});
+
+/* Окна поверх экрана (в Figma — варианты компонента во весь экран) */
+const closeX = `<button type="button" class="close-button close-button--external close-button--size-l dialog__close" aria-label="Закрыть" data-go="Первый вход"></button>`;
+const MODALS = {
+  'облачная касса': () => `<div class="dialog promo">${closeX}<div class="promo__text">
+      <p class="promo__title">Чеки от ЮKassa</p>
+      <ul><li>Только для оплат через ЮKassa</li><li>Не нужно покупать кассу и фискальный накопитель</li><li>Сниженная комиссия на платежи</li></ul>
+      <div class="promo__actions"><button class="btn btn--outlined btn--style-secondary btn--size-m" type="button" data-go="Variant24" data-pin>Подключить</button>
+        <a class="hint__link" href="#" onclick="return false">Узнать детали <i aria-hidden="true">&#xEB1C;</i></a></div></div>
+    <img class="promo__img" src="img/promo/yookassa-receipt.png" alt="" style="width:150px;height:150px"></div>`,
+  'рассрочка': () => `<div class="dialog promo">${closeX}<div class="promo__text">
+      <p class="promo__title">Рассрочка от Долями</p>
+      <p class="promo__lead">Покупатель платит частями, бизнес наращивает обороты.</p>
+      <ul><li>Гибкие сроки и лимиты</li><li>Подходит для любых каналов продаж</li><li>Подключение за 1 день бесплатно</li></ul>
+      <div class="promo__actions"><button class="btn btn--outlined btn--style-secondary btn--size-m" type="button" data-go="компания_рассрочка">Подключить</button>
+        <a class="hint__link" href="#" onclick="return false">Узнать детали <i aria-hidden="true">&#xEB1C;</i></a></div></div>
+    <img class="promo__img promo__img--wide" src="img/promo/dolyami-phone.png" alt=""></div>`,
+  'Variant24': () => `<div class="dialog yk">${closeX}<img src="img/banks/yookassa.svg" alt="">
+      <p class="yk__title">Подключение к ЮKassa</p>
+      <p class="yk__text">Отправьте заявку на подключение эквайринга<br>в несколько кликов</p>
+      <a class="link" href="#" onclick="return false" style="font-size:14px">Подробнее о сервисе</a>
+      <div class="yk__actions"><button class="btn-primary" type="button" data-confirm="Открытие мастера оформления заявки" data-pin>Отправить заявку</button>
+        <button class="link" type="button" data-confirm="Открытие мастера добавления договора">У меня есть договор</button></div></div>`,
+};
+
+/* Страница «Эквайринг» — Первый вход */
+const ACC = [['&#xE928;','Контакты','<b class="hot">13</b><b>13</b>'],['&#xE93C;','Задачи','<b>26</b>'],['&#xE940;','Бизнес',''],['&#xE938;','Встречи',''],
+  ['&#xE936;','Деньги','', 'open'],['&#xE93E;','Документы',''],['&#xE93F;','Компании',''],['&#xE912;','Маркетинг',''],['&#xE90F;','Контакт-центр',''],['&#xE93B;','Календарь',''],['','Краснов В.А.',''],['&#xE92D;','Настройки','']];
+const pageHTML = () => `
+  <nav class="acc" aria-label="Разделы"><div class="acc__logo"><img src="img/banks/saby.svg" alt="">saby</div>
+    <div class="acc__group">Предприятие</div>
+    ${ACC.map(([i, t, b, o]) => `<div class="acc__item${o ? ' is-open' : ''}"><i>${i}</i>${t}${b}</div>${o ? '<div class="acc__sub">Эквайринг</div>' : ''}`).join('')}
+  </nav>
+  <div class="pg"><div class="pg__user">КВ</div>
+    <div class="pg__tabs"><span class="is-active">Оплаты</span><span>Поступления</span><span>Отчеты</span></div>
+    <div class="pg__body"><h1 class="pg__title">Выберите эквайера или способ оплаты</h1>
+      <div class="chips">
+        <button class="chip" type="button" data-go="по эквайеру_выбор типа_с терминалом" data-pin><img src="img/banks/alfa.svg" alt="">Альфа-Банк</button>
+        <button class="chip" type="button" data-go="Т-Банк"><img src="img/banks/tbank.svg" alt="">Т-Банк</button>
+        <button class="chip" type="button" data-go="тип2"><img src="img/banks/sber.svg" alt="">Сбер</button>
+        <button class="chip" type="button" data-go="Variant24"><img src="img/banks/yookassa.svg" alt="">ЮKassa</button>
+        <button class="chip chip--more" type="button" data-go="тип2" aria-label="Все эквайеры">•••</button>
+      </div>
+      <div class="pg__cols">
+        <div>${caption('В торговой точке')}<div class="card menu-card">
+          ${menuItem('&#xE71B;', 'Банковский терминал', 'Прием карт через терминал в точке продаж и при доставке заказа', 'терминал')}
+          ${menuItem('&#xE915;', 'QR-код', 'Покупатель сканирует код на экране или чеке и платит в приложении банка', 'QRкод')}
+          ${menuItem('&#xEC92;', 'Кассовая ссылка', 'Табличка у кассы с постоянным QR‑кодом и NFC-меткой', 'кассовая ссылка')}</div></div>
+        <div>${caption('Онлайн')}<div class="card menu-card">
+          ${menuItem('&#xE6D1;', 'Интернет-платежи', 'Оплата картой на сайте или по ссылке из соцсетей и мессенджеров', 'интернет')}
+          ${menuItem('&#xE915;', 'QR-код', 'Покупатель сканирует код на странице оплаты и платит в приложении банка', 'QRкод')}
+          <div class="menu-sub">Дополнительно</div>
+          ${menuItem('&#xE601;', 'Сохранение способов оплаты', 'Для быстрых повторных оплат', 'сохранение')}
+          ${menuItem('&#xE9DD;', 'Чеки от ЮKassa', 'Для онлайн-продаж без покупки кассы', 'облачная касса')}</div></div>
+      </div></div></div>`;
+
+/* ---------- Переключение ---------- */
+const stage = document.getElementById('stage');
+const screen = document.getElementById('screen');
+const contractEl = document.querySelector('.contract');
+const modalEl = document.getElementById('modal');
+const toastEl = document.getElementById('toast');
+let toastTimer, frame;
+document.getElementById('page').innerHTML = pageHTML();
+
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add('is-shown');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), 1800);
+}
+let current = 'Первый вход';
+function render(id) {
+  if (id === 'тип2' || id === 'тип2_24') ACQ = id;
+  current = id; companyQuery = '';
+  COMPANIES.forEach((c, i) => { if (c.points) c.open = i === 0; }); // как в макете: первая компания раскрыта
+  modalEl.hidden = true; modalEl.innerHTML = '';
+  if (id === 'Первый вход') { contractEl.hidden = true; return; }
+  if (MODALS[id]) { contractEl.hidden = true; modalEl.innerHTML = MODALS[id](); modalEl.hidden = false; return; }
+  contractEl.hidden = false; screen.innerHTML = STATES[id]();
+  screen.querySelectorAll('.contract__body').forEach(attachScroll);
+  fitRecips();
+}
+
+/* Полоса прокрутки как в Saby: оборачиваем область и рисуем свой ползунок */
+function attachScroll(body) {
+  const wrap = document.createElement('div'); wrap.className = 'scroll';
+  body.replaceWith(wrap); wrap.appendChild(body);
+  const bar = document.createElement('div'); bar.className = 'vsb';
+  bar.innerHTML = '<div class="vsb__thumb"></div>'; wrap.appendChild(bar);
+  const thumb = bar.firstChild;
+  const update = () => {
+    const { scrollHeight: sh, clientHeight: ch, scrollTop: st } = body;
+    bar.hidden = sh <= ch + 1; if (bar.hidden) return;
+    const track = bar.clientHeight - 4, h = Math.max(24, track * ch / sh);
+    thumb.style.height = h + 'px'; thumb.style.top = ((track - h) * st / (sh - ch)) + 'px';
+  };
+  body.addEventListener('scroll', update); new ResizeObserver(update).observe(body); update();
+  thumb.addEventListener('mousedown', (e) => {          // перетаскивание ползунка
+    e.preventDefault(); bar.classList.add('is-drag');
+    const y0 = e.clientY, st0 = body.scrollTop, k = (body.scrollHeight - body.clientHeight) / (bar.clientHeight - 4 - thumb.offsetHeight);
+    const move = (ev) => { body.scrollTop = st0 + (ev.clientY - y0) / frame.scale * k; };
+    const up = () => { bar.classList.remove('is-drag'); removeEventListener('mousemove', move); removeEventListener('mouseup', up); };
+    addEventListener('mousemove', move); addEventListener('mouseup', up);
+  });
+  bar.addEventListener('mousedown', (e) => {            // клик по дорожке — прокрутка к месту
+    if (e.target !== bar) return;
+    const r = bar.getBoundingClientRect(); body.scrollTop = ((e.clientY - r.top) / r.height) * body.scrollHeight - body.clientHeight / 2;
+  });
+}
+function open(id) {
+  if (id === 'тип2') id = ACQ;
+  if (BUTTON_ONLY[id] || !IN_PANEL.has(id)) { render(id); return; }   // состояния без пункта в панели — только по кликам в интерфейсе
+  if (STATES[id] || MODALS[id] || id === 'Первый вход') { if (VARIANT_OF[id]) frame.select(VARIANT_OF[id], id); else frame.select(id); return; }
+  toast(OTHER[id] || `«${id}» — нет в макете`);
+}
+function confirmBox(text) {
+  const box = document.createElement('div'); box.className = 'modal';
+  box.innerHTML = `<div class="dialog confirm"><p>${esc(text)}</p><button class="btn btn--outlined btn--style-secondary btn--size-m" type="button" data-ok>ОК</button></div>`;
+  stage.appendChild(box);
+}
+stage.addEventListener('click', (e) => {
+  const ok = e.target.closest('[data-ok]'); if (ok) { ok.closest('.modal').remove(); return; }
+  const cf = e.target.closest('[data-confirm]'); if (cf) { confirmBox(cf.dataset.confirm); return; }
+  const tog = e.target.closest('[data-toggle]');
+  if (tog) {                       // раскрыть / свернуть компанию
+    e.preventDefault();
+    const c = COMPANIES[+tog.dataset.toggle]; c.open = !c.open;
+    document.getElementById('tree').outerHTML = companyTree(document.getElementById('tree').dataset.next);
+    return;
+  }
+  if (e.target.closest('.search')) return;
+  const pw = e.target.closest('[data-pw]');
+  if (pw) { CARDS[pw.dataset.pw].pwEdit = true; render(current); return; }   // «Изменить» пароль
+  const rc = e.target.closest('[data-recip]');
+  if (rc) {                        // получатели уведомлений
+    const r = CARDS.terminal.recips, a = rc.dataset.recip;
+    if (a === 'pick') r.push(...RECIPIENTS.slice(0, 3));
+    if (a === 'add') { const n = RECIPIENTS.find(x => !r.includes(x)); if (n) r.push(n); }
+    if (a === 'del') r.splice(+rc.dataset.i, 1);
+    if (a === 'clear') r.length = 0;
+    render(current); return;
+  }
+  const del = e.target.closest('[data-delterm]');
+  if (del) { CARDS.terminal.terminals.splice(+del.dataset.delterm, 1); render(current); return; }
+  const add = e.target.closest('[data-addterm]');
+  if (add) { CARDS.terminal.terminals.push(['Ресторан Мили', '235885666']); render(current); return; }
+  const t = e.target.closest('[data-toast]');
+  if (t) { if (!t.closest('.is-view')) toast(t.dataset.toast); return; }
+  const el = e.target.closest('[data-go]');
+  if (el) { e.preventDefault(); open(el.dataset.go); }
+});
+stage.addEventListener('change', (e) => {   // переключатели карточки
+  const s = e.target.dataset.sw; if (s) CARDS[e.target.dataset.card].sw[s] = e.target.checked;
+});
+stage.addEventListener('input', (e) => {
+  const f = e.target.dataset.f; if (f) { CARDS[e.target.dataset.card][f] = e.target.value; return; }  // поля карточки
+  const d = e.target.dataset.dol; if (d) { DOLYAMI[d] = e.target.value; return; }                       // поля «Долями»
+  if (!e.target.matches('[data-search]')) return;  // поиск по компаниям и точкам продаж
+  companyQuery = e.target.value;
+  document.getElementById('tree').outerHTML = companyTree(e.target.dataset.search);
+});
+
+/* ---------- Рамка ---------- */
+const BUTTON_ONLY = { 'заполненная карточка': 1, 'интернет_заполненная': 1, 'терминал_заполненная': 1 };
+const VARIANT_OF = {
+  'тип2': 'v-acq', 'тип2_24': 'v-acq',
+  'пустая_СБП': 'card-sbp', 'просмотр карточки': 'card-sbp',
+  'пустая _интернет': 'card-internet', 'интернет_просмотр': 'card-internet',
+  'пустая_терминал': 'card-terminal', 'терминал_просмотр': 'card-terminal',
+  'сохранение': 'v-save', 'сохранение_есть договоры': 'v-save', 'кассовая ссылка': 'v-cash', 'кассовая ссылка_есть договоры': 'v-cash',
+};
+let SCENARIOS;
+frame = DemoFrame.mount({
+  stage,
+  head: { title: 'Изменения в мастере эквайринга', status: 'Устный Ok 19.12.25' },
+  width: 1024, height: 768,
+  devices: [{ id: 'laptop', icon: 'laptop', label: 'Ноутбук', size: '1024х768', name: 'ноутбук' }],
+  scenarios: SCENARIOS = [
+    { group: 'Старт', items: [
+      { id: 'Первый вход', title: 'Первый вход' },
+      { id: 'тип', title: 'Способы оплаты' },
+      { id: 'v-acq', title: 'Эквайеры', variants: [
+        { id: 'тип2', title: 'Текущий' }, { id: 'тип2_24', title: 'Иконки 24' } ] },
+    ] },
+    { group: 'Способ оплаты', items: [
+      { id: 'терминал', title: 'Терминал' },
+      { id: 'интернет', title: 'Интернет-платежи' },
+      { id: 'QRкод', title: 'QR-код' },
+      { id: 'v-cash', title: 'Кассовая ссылка', variants: [
+        { id: 'кассовая ссылка', title: 'Нет договоров' }, { id: 'кассовая ссылка_есть договоры', title: 'Есть договоры' } ] },
+      { id: 'v-save', title: 'Сохранение способов оплаты', variants: [
+        { id: 'сохранение', title: 'Нет договоров' }, { id: 'сохранение_есть договоры', title: 'Есть договоры' } ] },
+      { id: 'сохранение_тип экв', title: 'Сохранение: тип эквайринга' },
+    ] },
+    { group: 'Карточка договора', items: [
+      { id: 'card-sbp', title: 'QR-код СБП', variants: [
+        { id: 'пустая_СБП', title: 'Подключение' }, { id: 'просмотр карточки', title: 'Просмотр' } ] },
+      { id: 'card-internet', title: 'Интернет-платежи', variants: [
+        { id: 'пустая _интернет', title: 'Подключение' }, { id: 'интернет_просмотр', title: 'Просмотр' } ] },
+      { id: 'card-terminal', title: 'Терминал', variants: [
+        { id: 'пустая_терминал', title: 'Новый' }, { id: 'терминал_просмотр', title: 'Просмотр' } ] },
+    ] },
+    { group: 'Окна', items: [
+      { id: 'облачная касса', title: 'Чеки от ЮKassa' },
+      { id: 'Variant24', title: 'Подключение к ЮKassa' },
+    ] },
+  ],
+  links: [
+    { title: 'Главная эквайринга', href: 'https://www.figma.com/proto/GT0D3bbOekTyLM6KqvElaz/?node-id=13862-468983&starting-point-node-id=13862%3A468983&scaling=min-zoom&content-scaling=fixed&hide-ui=1' },
+    { title: 'Создание договора', href: 'https://www.figma.com/proto/9n4SEirpv2VthLPHq5UVJA/?node-id=5816-87115&starting-point-node-id=5816%3A87115&scaling=min-zoom&content-scaling=fixed&hide-ui=1' },
+    { title: 'Согласование макета', href: 'https://online.sbis.ru/opendoc.html?guid=aa48fae1-9e5f-4a98-9718-3ce983af3c95&client=3' },
+    { title: 'Описание БП', href: 'https://online.sbis.ru/article/2fd9d904-f86f-46f2-8294-f28468db5c24/69f8b553-0340-4336-840d-393aed09c146' },
+    { title: 'Макет в Figma', href: 'https://www.figma.com/design/GT0D3bbOekTyLM6KqvElaz/?node-id=29823-237281' },
+  ],
+  value: { scenario: 'тип' },
+  onChange({ scenario, variant }) { render(variant || scenario); },
+});
+
+/* Какие состояния есть в панели (остальные открываются только кликами в интерфейсе) */
+const IN_PANEL = new Set(['Первый вход']);
+(function collect(list) { list.forEach(x => { if (x.items) collect(x.items); else { IN_PANEL.add(x.id); (x.variants || []).forEach(v => IN_PANEL.add(v.id)); } }); })(SCENARIOS);
+
+/* Переключатель «Точки» вверху панели, как в прототипе */
+const pinsBox = document.createElement('label');
+pinsBox.className = 'demo-pins switch switch--caption-start';
+pinsBox.innerHTML = '<input class="switch__input" type="checkbox" role="switch" checked><span class="switch__button"></span><span class="switch__caption">Точки</span>';
+frame.panel.prepend(pinsBox);
+const syncPins = () => stage.classList.toggle('pins', pinsBox.querySelector('input').checked);
+pinsBox.addEventListener('change', syncPins); syncPins();
+render('тип');
 </script>
 </body>
 </html>

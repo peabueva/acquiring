@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Эквайеры — варианты вёрстки</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/tokens.css">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/tumbler/tumbler.css">
+<style>
+  body { margin: 0; background: #e9eaee; font-family: var(--font-font-family-default), sans-serif; color: var(--text-text-color); }
+  .page { padding: 24px 32px 48px; }
+  .page h1 { margin: 0 0 4px; font-size: 24px; font-weight: 600; }
+  .page > p { margin: 0 0 24px; color: var(--text-label_contrast_text-color); font-size: 15px; max-width: 900px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 40px; }
+  .var { width: 451px; }
+  .var h2 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+  .var .note { margin: 0 0 10px; font-size: 13px; line-height: 1.4; color: var(--text-label_contrast_text-color); min-height: 54px; }
+  .shot { width: 451px; height: 576px; overflow: hidden; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+  /* панель компонента 602×768 в масштабе 0.75 */
+  .panel { width: 602px; height: 768px; transform: scale(.75); transform-origin: 0 0; background: var(--background-unaccented_background-color);
+    display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .head { height: 46px; flex: none; display: flex; align-items: center; padding: 0 64px 2px 20px; }
+  .head h3 { flex: 1; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.28px; }
+  .x { position: absolute; right: 10px; top: 7px; width: 32px; height: 32px; border-radius: 16px; background: var(--background-contrast-pale_color);
+    display: flex; align-items: center; justify-content: center; color: var(--icon-secondary_icon-color); font-size: 18px; }
+  .body { flex: 1; padding: 0 52px 0 8px; overflow: hidden; }
+  .cap { margin: 0; padding: 8px 12px 4px; font-size: 15px; line-height: 20px; color: var(--text-label_text-color); font-weight: 400; }
+  /* плашки как в макете: 267×56, r12 */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .t { background: #fff; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 12px; height: 56px; box-sizing: border-box; font-size: 15px; }
+  .t img { width: 32px; height: 32px; object-fit: contain; flex: none; }
+  .v5 .t { height: 48px; gap: 12px; font-size: 15px; }
+  .v5 .t img { width: 24px; height: 24px; }
+  .t small { display: block; font-size: 12px; color: var(--text-unaccented_text-color); margin-top: 2px; }
+  .all { margin-top: 8px; background: #fff; border-radius: 12px; height: 56px; box-sizing: border-box; padding: 0 16px; display: flex; align-items: center; gap: 12px; font-size: 15px; }
+  .all__logos { display: flex; }
+  .all__logos img { width: 24px; height: 24px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 2px #fff; margin-right: -6px; object-fit: contain; }
+  .all__count { color: var(--text-label_text-color); }
+  .all__chev { margin-left: auto; font-family: "cbuc-icons"; color: var(--icon-secondary_icon-color); font-size: 16px; }
+  /* простой список, как вкладка «способы оплаты» */
+  .list { background: #fff; border-radius: 16px; padding: 8px 8px; }
+  .list__cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px; font-size: 15px; border-radius: 12px; }
+  .row img { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  .sub { height: 30px; display: flex; align-items: flex-end; padding: 0 12px 4px; font-size: 13px; color: var(--text-label_text-color); }
+  /* поиск */
+  .search { margin: 4px 0 4px; height: 40px; border-radius: 12px; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 14px;
+    font-size: 15px; color: var(--text-label_text-color); box-shadow: inset 0 0 0 1px var(--border-pale_border-color); }
+  .search i { font-style: normal; font-family: "cbuc-icons"; font-size: 16px; color: var(--icon-secondary_icon-color); }
+  .muted { padding: 14px 12px 0; font-size: 14px; line-height: 1.4; color: var(--text-unaccented_text-color); }
+  .muted b { font-weight: 400; color: var(--text-link_text-color); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Экран «Эквайеры»: варианты попроще</h1>
+  <p>Показываем меньше: на экране только главное, остальное по запросу. Плашки остаются как в макете (56 px, логотип 32, шрифт 15). Это статичные картинки, в них ничего не кликается.</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const L = {
+  'Любой банк':'anybank.svg','Альфа-Банк':'alfa.svg','Газпромбанк':'gazprom.svg','Модульбанк':'modul.svg','PayAnyWay':'payanyway.png',
+  'Промсвязьбанк':'psb.svg','PayKeeper':'paykeeper.svg','Райффайзенбанк':'raif.svg','Сбер':'sber.svg','Т-Банк':'tbank.svg',
+  'Уралпромбанк':'uralprom.svg','ЮKassa':'yookassa.svg','Saby':'saby.svg','Русский Стандарт':'russt.svg','Сбер новый':'sber.svg',
+  'Точка':'tochka.svg','Сбер корпорациям':'sber.svg','CloudPayments':'cloudpayments.png',
+};
+const img = n => `<img src="img/banks/${L[n]}" alt="">`;
+const tile = (n, sub) => `<div class="t">${img(n)}<span>${n}${sub ? `<small>${sub}</small>` : ''}</span></div>`;
+const head = `<div class="head"><h3>Начните прием оплаты</h3><div class="tumbler" role="radiogroup">
+  <span class="tumbler__item"><span class="tumbler__caption">способы оплаты</span></span>
+  <span class="tumbler__item is-selected"><span class="tumbler__caption">эквайеры</span></span></div></div><div class="x">✕</div>`;
+const POPULAR = ['Альфа-Банк', 'Сбер', 'Т-Банк', 'ЮKassa', 'Точка', 'Райффайзенбанк'];
+
+const V = [
+  ['1. Популярные и «Все эквайеры»',
+   'На экране 6 популярных банков и «Любой банк» для терминала. Остальные 12 партнёров, включая B2B, — по строке «Все эквайеры», которая открывает полный список.',
+   `<h4 class="cap">Банковский терминал</h4><div class="tiles">${tile('Любой банк')}</div>
+    <h4 class="cap">Популярные</h4><div class="tiles">${POPULAR.map(n => tile(n)).join('')}</div>
+    <div class="all"><span class="all__logos">${['Газпромбанк','Модульбанк','PayKeeper','CloudPayments'].map(img).join('')}</span>
+      <span style="margin-left:10px">Все эквайеры</span><span class="all__count">ещё 12</span><span class="all__chev">&#xE9C2;</span></div>`],
+
+  ['2. Простой список, как «способы оплаты»',
+   'Одна белая карточка, как на соседней вкладке: строки с логотипом 24 и названием в две колонки, вместо плашек и крупных заголовков — тихие подписи групп. Все 19 партнёров на месте и влезают без скролла.',
+   `<div class="list">
+     <div class="sub" style="height:22px">Банковский терминал</div><div class="list__cols"><div class="row">${img('Любой банк')}Любой банк</div></div>
+     <div class="sub">Интернет-платежи и QR-код СБП</div>
+     <div class="list__cols">${['Альфа-Банк','Газпромбанк','Модульбанк','PayAnyWay','Промсвязьбанк','PayKeeper','Райффайзенбанк','Сбер','Т-Банк','Уралпромбанк','ЮKassa','Saby'].map(n => `<div class="row">${img(n)}${n}</div>`).join('')}</div>
+     <div class="sub">Только QR-код СБП</div>
+     <div class="list__cols">${['Русский Стандарт','Сбер новый','Точка'].map(n => `<div class="row">${img(n)}${n}</div>`).join('')}</div>
+     <div class="sub">Только интернет-платежи</div>
+     <div class="list__cols">${['Сбер корпорациям','CloudPayments'].map(n => `<div class="row">${img(n)}${n}</div>`).join('')}</div>
+     <div class="sub">QR-код СБП B2B</div>
+     <div class="list__cols"><div class="row">${img('Сбер')}Сбер</div></div>
+   </div>`],
+
+  ['3. Поиск и популярные',
+   'Сверху поле «Найти эквайера», под ним 6 популярных банков и «Любой банк». Остальных находят поиском по названию, подсказка внизу.',
+   `<div class="search"><i>&#xE662;</i>Найти эквайера</div>
+    <h4 class="cap">Популярные</h4><div class="tiles">${[...POPULAR, 'Любой банк'].map(n => tile(n, n === 'Любой банк' ? 'Банковский терминал' : '')).join('')}</div>
+    <div class="muted">Ещё 12 эквайеров, включая QR-код СБП B2B, — найдите по названию или <b>посмотрите всех</b></div>`],
+  ['4. Текущая версия, B2B рядом с терминалом',
+   'Всё как сейчас: 2 колонки по 56 px, те же группы. Только «QR-код СБП B2B» с Сбером переехал в верхнюю строку, рядом с «Банковским терминалом», на свободное место справа.',
+   `<div class="tiles"><div><h4 class="cap">Банковский терминал</h4>${tile('Любой банк')}</div><div><h4 class="cap">QR-код СБП B2B</h4>${tile('Сбер')}</div></div>
+    <h4 class="cap">Интернет-платежи и QR-код СБП</h4><div class="tiles">${['Альфа-Банк','Газпромбанк','Модульбанк','PayAnyWay','Промсвязьбанк','PayKeeper','Райффайзенбанк','Сбер','Т-Банк','Уралпромбанк','ЮKassa','Saby'].map(n => tile(n)).join('')}</div>
+    <h4 class="cap">Только QR-код СБП</h4><div class="tiles">${['Русский Стандарт','Сбер новый','Точка'].map(n => tile(n)).join('')}</div>
+    <h4 class="cap">Только интернет-платежи</h4><div class="tiles">${['Сбер корпорациям','CloudPayments'].map(n => tile(n)).join('')}</div>`],
+  ['5. Текущая версия, иконки 24',
+   'Группы и порядок как сейчас, B2B внизу. Логотипы 24 px вместо 32, шрифт 15. Плашка с отступами 12 становится 48 px вместо 56.',
+   `<div class="v5">
+    <h4 class="cap">Банковский терминал</h4><div class="tiles">${tile('Любой банк')}</div>
+    <h4 class="cap">Интернет-платежи и QR-код СБП</h4><div class="tiles">${['Альфа-Банк','Газпромбанк','Модульбанк','PayAnyWay','Промсвязьбанк','PayKeeper','Райффайзенбанк','Сбер','Т-Банк','Уралпромбанк','ЮKassa','Saby'].map(n => tile(n)).join('')}</div>
+    <h4 class="cap">Только QR-код СБП</h4><div class="tiles">${['Русский Стандарт','Сбер новый','Точка'].map(n => tile(n)).join('')}</div>
+    <h4 class="cap">Только интернет-платежи</h4><div class="tiles">${['Сбер корпорациям','CloudPayments'].map(n => tile(n)).join('')}</div>
+    <h4 class="cap">QR-код СБП B2B</h4><div class="tiles">${tile('Сбер')}</div></div>`],
+];
+
+document.getElementById('grid').innerHTML = V.map(([t, n, b]) => `
+  <section class="var"><h2>${t}</h2><p class="note">${n}</p>
+    <div class="shot"><div class="panel">${head}<div class="body">${b}</div></div></div></section>`).join('');
+document.querySelectorAll('.panel').forEach(p => {
+  const body = p.querySelector('.body'); const over = body.scrollHeight - body.clientHeight;
+  p.closest('.var').querySelector('h2').insertAdjacentHTML('beforeend', over > 0
+    ? ` <span style="font-size:12px;font-weight:400;padding:1px 6px;border-radius:8px;background:#ffeceb;color:#c2140a">скролл +${over}px</span>`
+    : ` <span style="font-size:12px;font-weight:400;padding:1px 6px;border-radius:8px;background:#ebffee;color:#298e3c">без скролла</span>`);
+});
+</script>
+</body>
+</html>
